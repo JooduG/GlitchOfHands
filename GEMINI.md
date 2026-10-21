@@ -12,9 +12,9 @@ This document governs the engineering standards, card simulation engine, React 1
 
 - **P1: User Agency**: Never speak, act, or think on behalf of the User. Maintain third-person limited integrity for non-user cards.
 - **P2: The Efficiency Ladder (YAGNI & Pragmatism)**:
-  1. *YAGNI*: Does this genuinely need to be built? Keep every decision "for now" until proven necessary.
-  2. *Standard Web Platform & React*: Use native React 19 hooks (`useState`, `useReducer`, `useContext`) before reaching for third-party state managers.
-  3. *Minimal Code*: Write the cleanest, most focused code that solves the immediate problem.
+  1. _YAGNI_: Does this genuinely need to be built? Keep every decision "for now" until proven necessary.
+  2. _Standard Web Platform & React_: Use native React 19 hooks (`useState`, `useReducer`, `useContext`) before reaching for third-party state managers.
+  3. _Minimal Code_: Write the cleanest, most focused code that solves the immediate problem.
 - **P3: Zero Backwards Compatibility (Pre-Beta Purity)**: Never write backwards-compatible fallbacks or legacy aliases. Update consumers directly and prune dead code immediately.
 - **P4: Design Sovereignty**: All tokens are authored in [DESIGN.md](./DESIGN.md) following the Google Labs `design.md` spec and compiled to `@theme` in `src/index.css`.
 

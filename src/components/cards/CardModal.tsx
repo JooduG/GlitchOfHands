@@ -6,22 +6,22 @@
  * specs, public/private brackets, and triggers.
  */
 
-import type { Card } from '../../types/card.ts'
-import { CARD_TYPE_REGISTRY } from '../../types/card.ts'
-import { CardAvatar } from './CardAvatar.tsx'
-import { TypeBadge } from './TypeBadge.tsx'
+import type { Card } from "../../types/card.ts";
+import { CARD_TYPE_REGISTRY } from "../../types/card.ts";
+import { CardAvatar } from "./CardAvatar.tsx";
+import { TypeBadge } from "./TypeBadge.tsx";
 
 interface CardModalProps {
-  card: Card | null
-  isOpen: boolean
-  onClose: () => void
-  onSave?: (updated: Card) => void
+  card: Card | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave?: (updated: Card) => void;
 }
 
 export function CardModal({ card, isOpen, onClose }: CardModalProps) {
-  if (!isOpen || !card) return null
+  if (!isOpen || !card) return null;
 
-  const meta = CARD_TYPE_REGISTRY[card.type]
+  const meta = CARD_TYPE_REGISTRY[card.type];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05060a]/80 backdrop-blur-sm animate-in fade-in duration-150">
@@ -34,14 +34,10 @@ export function CardModal({ card, isOpen, onClose }: CardModalProps) {
           <div className="flex items-center gap-3">
             <CardAvatar card={card} size="lg" />
             <div>
-              <h2 className="text-xl font-bold font-ubuntu text-[#f2f7fa]">
-                {card.name}
-              </h2>
+              <h2 className="text-xl font-bold font-ubuntu text-[#f2f7fa]">{card.name}</h2>
               <div className="flex items-center gap-2 mt-1">
                 <TypeBadge type={card.type} />
-                <span className="font-mono text-xs text-[#8b93a1]">
-                  ID: {card.id}
-                </span>
+                <span className="font-mono text-xs text-[#8b93a1]">ID: {card.id}</span>
               </div>
             </div>
           </div>
@@ -62,7 +58,7 @@ export function CardModal({ card, isOpen, onClose }: CardModalProps) {
               Definition & Character Essence
             </label>
             <p className="rounded-lg border border-[#363840]/60 bg-[#05060a]/50 p-3 text-sm text-[#f2f7fa] whitespace-pre-wrap leading-relaxed">
-              {card.definition || 'No definition provided.'}
+              {card.definition || "No definition provided."}
             </p>
           </div>
 
@@ -97,7 +93,7 @@ export function CardModal({ card, isOpen, onClose }: CardModalProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 /**

@@ -53,7 +53,7 @@ A holistic design system for **GlitchOfHands**: one vision, one token set, one m
 
 ## 1. Vision — The Story is the Interface
 
-- **Chrome recedes, scene advances.** The feed is the product; every panel, button, and label exists to serve it. If an element doesn't help the user understand *who is speaking, what is happening, or what happens next*, it moves into the sidebar or behind the ⋯ Menu.
+- **Chrome recedes, scene advances.** The feed is the product; every panel, button, and label exists to serve it. If an element doesn't help the user understand _who is speaking, what is happening, or what happens next_, it moves into the sidebar or behind the ⋯ Menu.
 - **Sidebar-first console.** The left panel is mission control: who (peer), how much (tokens), with whom (table), from what (deck), and everything else (Menu). The main column carries only the scene (bubbles) and the stage door (composer).
 - **Table-as-stage.** The hand of cards is a cast list: rotation badges are the speaking order, the mode line (⚡/🎬) is the house-light state, Banter is "improvise without me."
 - **Dual voice.** Story space is warm and playful (Banter, Shuffle, emoji); system chrome is clinical and terse (mono labels, tooltips, "Sure?"). Never mix them in one string.
@@ -72,27 +72,28 @@ A holistic design system for **GlitchOfHands**: one vision, one token set, one m
 
 ### Palette — Names are the API
 
-| Token | Hex | Job |
-|---|---|---|
-| `--void` | `#05060a` | page depth, input wells |
-| `--frisk` | `#f2f7fa` | primary text |
-| `--gunmetal` | `#363840` | neutral buttons, hovers, scrollbars |
-| `--frozen` | `#555d66` | placeholders, empty states, disabled |
-| `--muted` | `#8b93a1` | secondary text |
-| `--chalk` | `#191b21` | editor panels, menus, solid surfaces |
-| `--cyan` | `#11aecc` | presence + focus: active states, rings, glow |
-| `--emerald` | `#10b981` | go: Send, Save, Banter, user bubbles |
-| `--danger` | `#ef4444` | destructive, errors, stop |
-| `--pink` | `#ec4899` | persona flair, instruct-flavored actions |
-| `--amber` | `#fbbf24` | chaos/warning, director |
-| `--blue` | `#3b82f6` | info, scenario |
-| `--purple` | `#a855f7` | style accents |
+| Token        | Hex       | Job                                          |
+| ------------ | --------- | -------------------------------------------- |
+| `--void`     | `#05060a` | page depth, input wells                      |
+| `--frisk`    | `#f2f7fa` | primary text                                 |
+| `--gunmetal` | `#363840` | neutral buttons, hovers, scrollbars          |
+| `--frozen`   | `#555d66` | placeholders, empty states, disabled         |
+| `--muted`    | `#8b93a1` | secondary text                               |
+| `--chalk`    | `#191b21` | editor panels, menus, solid surfaces         |
+| `--cyan`     | `#11aecc` | presence + focus: active states, rings, glow |
+| `--emerald`  | `#10b981` | go: Send, Save, Banter, user bubbles         |
+| `--danger`   | `#ef4444` | destructive, errors, stop                    |
+| `--pink`     | `#ec4899` | persona flair, instruct-flavored actions     |
+| `--amber`    | `#fbbf24` | chaos/warning, director                      |
+| `--blue`     | `#3b82f6` | info, scenario                               |
+| `--purple`   | `#a855f7` | style accents                                |
 
 Background: 4-stop void gradient, `120deg`, fixed: `#0b101a → #14182b → #1e1b38 → #16243b`. Dark-only.
 
 ### Accent Lock (Minimalism Rule)
 
 Two accents, non-overlapping jobs, never in the same pixel:
+
 - **Cyan = presence.** Focus rings, active/equipped states, rotation badges, speaker labels, glow. Answers "where am I / who is on."
 - **Emerald = go.** Send, Save, Banter, user bubbles. Answers "what moves the story forward."
 - Card-type colors (pink/blue/green/red/amber/purple/grey) appear ONLY as 3px slot edges and type dots — never as fills, glows, or button colors.
@@ -100,6 +101,7 @@ Two accents, non-overlapping jobs, never in the same pixel:
 ## 3. Motion Grammar
 
 One curve (`--physics: 150ms cubic-bezier(0.4,0,0.2,1)`), three verbs:
+
 - **Hover = brighten** (`filter: brightness(1.2)`), never move.
 - **Press = sink** (`scale(0.97)`), instant tactile answer on every pressable.
 - **Enter = rise** (`translateY(8px)` + fade, 180ms); **exits are instant** (`display:none` toggles) — dismissals must never block the next action.

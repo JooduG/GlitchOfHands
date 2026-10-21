@@ -5,59 +5,59 @@
  * Implements the Card-Table Stage, Collapsible Binder Sidebar, and Chat Feed.
  */
 
-import { useState } from 'react'
-import type { Card } from './types/card.ts'
-import { STARTER_CARDS } from './data/starter-cards.ts'
-import { CardTile } from './components/cards/CardTile.tsx'
-import { BoardSlot, EmptySlot } from './components/cards/BoardSlot.tsx'
-import { CardModal } from './components/cards/CardModal.tsx'
+import { useState } from "react";
+import type { Card } from "./types/card.ts";
+import { STARTER_CARDS } from "./data/starter-cards.ts";
+import { CardTile } from "./components/cards/CardTile.tsx";
+import { BoardSlot, EmptySlot } from "./components/cards/BoardSlot.tsx";
+import { CardModal } from "./components/cards/CardModal.tsx";
 
 export function App() {
-  const [cards] = useState<Card[]>(STARTER_CARDS)
-  const [boardIds, setBoardIds] = useState<string[]>(['Chloe', 'Riverside', 'CozyDirector'])
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [inspectedCard, setInspectedCard] = useState<Card | null>(null)
-  const [filterType, setFilterType] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [cards] = useState<Card[]>(STARTER_CARDS);
+  const [boardIds, setBoardIds] = useState<string[]>(["Chloe", "Riverside", "CozyDirector"]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [inspectedCard, setInspectedCard] = useState<Card | null>(null);
+  const [filterType, setFilterType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Toggle card on/off board
   const handleToggleBoard = (id: string) => {
     setBoardIds((prev) => {
       if (prev.includes(id)) {
-        return prev.filter((item) => item !== id)
+        return prev.filter((item) => item !== id);
       }
-      if (prev.length >= 6) return prev
-      return [...prev, id]
-    })
-  }
+      if (prev.length >= 6) return prev;
+      return [...prev, id];
+    });
+  };
 
   // Remove card from board
   const handleRemoveFromBoard = (id: string) => {
-    setBoardIds((prev) => prev.filter((item) => item !== id))
-  }
+    setBoardIds((prev) => prev.filter((item) => item !== id));
+  };
 
   // Compute speaker order for characters on the board
-  let speakerCounter = 0
+  let speakerCounter = 0;
   const boardSlots = boardIds
     .map((id) => cards.find((c) => c.id === id))
     .filter((c): c is Card => !!c)
     .map((card) => {
-      let order = 0
-      if (card.type === 'character') {
-        speakerCounter++
-        order = speakerCounter
+      let order = 0;
+      if (card.type === "character") {
+        speakerCounter++;
+        order = speakerCounter;
       }
-      return { card, order }
-    })
+      return { card, order };
+    });
 
   // Filtered binder cards
   const filteredCards = cards.filter((card) => {
-    const matchesFilter = filterType === 'all' || card.type === filterType
+    const matchesFilter = filterType === "all" || card.type === filterType;
     const matchesSearch =
       card.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.definition.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesFilter && matchesSearch
-  })
+      card.definition.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   return (
     <div className="flex h-screen w-full flex-col bg-[#05060a]/90 text-[#f2f7fa] overflow-hidden">
@@ -96,7 +96,7 @@ export function App() {
         {/* Collapsible Left Sidebar: Binder */}
         <aside
           className={`${
-            isSidebarOpen ? 'w-80 md:w-96 translate-x-0' : '-translate-x-full w-0'
+            isSidebarOpen ? "w-80 md:w-96 translate-x-0" : "-translate-x-full w-0"
           } flex flex-col flex-none border-r border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl transition-all duration-200 z-10 overflow-hidden`}
         >
           {/* Binder Header & Search */}
@@ -117,15 +117,25 @@ export function App() {
 
             {/* Type Filter Pills */}
             <div className="flex flex-wrap gap-1">
-              {['all', 'character', 'persona', 'location', 'director', 'rule'].map((t) => (
+              {[
+                "all",
+                "character",
+                "persona",
+                "scenario",
+                "location",
+                "challenge",
+                "director",
+                "style",
+                "rule",
+              ].map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setFilterType(t)}
                   className={`rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
                     filterType === t
-                      ? 'bg-[#11aecc] text-[#05060a] font-bold'
-                      : 'bg-[#191b21] text-[#8b93a1] hover:text-[#f2f7fa]'
+                      ? "bg-[#11aecc] text-[#05060a] font-bold"
+                      : "bg-[#191b21] text-[#8b93a1] hover:text-[#f2f7fa]"
                   }`}
                 >
                   {t}
@@ -172,9 +182,7 @@ export function App() {
                 />
               ))}
 
-              {boardIds.length < 6 && (
-                <EmptySlot text={`Slot ${boardIds.length + 1} (Empty)`} />
-              )}
+              {boardIds.length < 6 && <EmptySlot text={`Slot ${boardIds.length + 1} (Empty)`} />}
             </div>
           </section>
 
@@ -188,7 +196,8 @@ export function App() {
                 Scene Stage Door Ready
               </h3>
               <p className="mt-1 max-w-sm text-xs text-[#8b93a1]">
-                Equip speaking characters to the board to begin automated rotation or interactive chat.
+                Equip speaking characters to the board to begin automated rotation or interactive
+                chat.
               </p>
             </div>
           </section>
@@ -202,10 +211,10 @@ export function App() {
         onClose={() => setInspectedCard(null)}
       />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
 
 /**
  * CHANGELOG:

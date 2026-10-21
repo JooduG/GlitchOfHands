@@ -7,30 +7,34 @@
 
 declare global {
   interface Window {
-    generatorName?: string
+    generatorName?: string;
     root?: {
-      generateText?: (prompt: string | { prompt: string; [key: string]: unknown }) => Promise<string | { text: string; [key: string]: unknown }>
-      generateImage?: (prompt: string | { prompt: string; [key: string]: unknown }) => Promise<{ dataUrl?: string; [key: string]: unknown }>
+      generateText?: (
+        prompt: string | { prompt: string; [key: string]: unknown },
+      ) => Promise<string | { text: string; [key: string]: unknown }>;
+      generateImage?: (
+        prompt: string | { prompt: string; [key: string]: unknown },
+      ) => Promise<{ dataUrl?: string; [key: string]: unknown }>;
       kv?: {
-        get?: (key: string) => Promise<unknown>
-        set?: (key: string, value: unknown) => Promise<void>
-        list?: () => Promise<string[]>
-        delete?: (key: string) => Promise<void>
-      }
+        get?: (key: string) => Promise<unknown>;
+        set?: (key: string, value: unknown) => Promise<void>;
+        list?: () => Promise<string[]>;
+        delete?: (key: string) => Promise<void>;
+      };
       chatPlugin?: {
-        getCardTypes?: () => unknown[]
-        getStarterCards?: () => unknown[]
-        getStarterCardById?: (id: string) => unknown
-        [key: string]: unknown
-      }
-      [key: string]: unknown
-    }
+        getCardTypes?: () => unknown[];
+        getStarterCards?: () => unknown[];
+        getStarterCardById?: (id: string) => unknown;
+        [key: string]: unknown;
+      };
+      [key: string]: unknown;
+    };
   }
 
-  const root: Window['root']
+  const root: Window["root"];
 }
 
-export {}
+export {};
 
 /**
  * CHANGELOG:

@@ -7,23 +7,23 @@
  * remove button, and discrete ⋯ menu button for inspection.
  */
 
-import type { Card } from '../../types/card.ts'
-import { CARD_TYPE_REGISTRY } from '../../types/card.ts'
+import type { Card } from "../../types/card.ts";
+import { CARD_TYPE_REGISTRY } from "../../types/card.ts";
 
 interface BoardSlotProps {
-  card: Card
-  order: number // 0 = not speaking, 1..6 = rotation order
-  onRemove: (id: string) => void
-  onInspect: (card: Card) => void
+  card: Card;
+  order: number; // 0 = not speaking, 1..6 = rotation order
+  onRemove: (id: string) => void;
+  onInspect: (card: Card) => void;
 }
 
 function initialOf(name?: string): string {
-  return String((name || '?').trim().charAt(0) || '?').toUpperCase()
+  return String((name || "?").trim().charAt(0) || "?").toUpperCase();
 }
 
 export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) {
-  const meta = CARD_TYPE_REGISTRY[card.type]
-  const typeEdgeColor = meta?.color || '#11aecc'
+  const meta = CARD_TYPE_REGISTRY[card.type];
+  const typeEdgeColor = meta?.color || "#11aecc";
 
   return (
     <div
@@ -45,8 +45,8 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
             title="Inspect"
             aria-label={`Inspect ${card.name}`}
             onClick={(e) => {
-              e.stopPropagation()
-              onInspect(card)
+              e.stopPropagation();
+              onInspect(card);
             }}
             className="w-5 h-5 rounded text-[#555d66] hover:text-[#f2f7fa] hover:bg-[#363840] flex items-center justify-center font-mono text-xs transition-colors"
           >
@@ -57,8 +57,8 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
             title="Remove from board"
             aria-label={`Remove ${card.name}`}
             onClick={(e) => {
-              e.stopPropagation()
-              onRemove(card.id)
+              e.stopPropagation();
+              onRemove(card.id);
             }}
             className="w-5 h-5 rounded text-[#555d66] hover:text-[#ef4444] hover:bg-[#363840] flex items-center justify-center text-xs transition-colors"
           >
@@ -78,9 +78,7 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
 
       {/* Bottom Row: Name & Speaker Rotation Badge */}
       <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-semibold text-[#f2f7fa] truncate flex-1">
-          {card.name}
-        </span>
+        <span className="text-xs font-semibold text-[#f2f7fa] truncate flex-1">{card.name}</span>
 
         {order > 0 && (
           <span
@@ -92,15 +90,15 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export function EmptySlot({ text = '+ Card' }: { text?: string }) {
+export function EmptySlot({ text = "+ Card" }: { text?: string }) {
   return (
     <div className="flex-none w-32 min-h-[164px] border border-dashed border-[#555d66]/50 rounded-xl flex items-center justify-center font-mono text-[11px] tracking-[0.08em] uppercase text-[#555d66] p-3 text-center select-none">
       {text}
     </div>
-  )
+  );
 }
 
 /**

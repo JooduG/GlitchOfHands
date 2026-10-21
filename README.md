@@ -3,7 +3,7 @@
 > **AI character chat, roleplay, and multi-agent card simulation engine**  
 > Powered by React 19, TypeScript, Tailwind CSS v4, and Perchance plugins (`ai-text-plugin`, `text-to-image-plugin`, `kv-plugin`).
 
-Built using the principles from the *React + AI Stack for 2026*, designed for high type safety, clean component boundaries, and lean runtime overhead.
+Built using the principles from the _React + AI Stack for 2026_, designed for high type safety, clean component boundaries, and lean runtime overhead.
 
 - **Live Perchance Generator**: [perchance.org/glitchofhand#edit:collab=Z4gQbylwtIzJIrqiJ68L](https://perchance.org/glitchofhand#edit:collab=Z4gQbylwtIzJIrqiJ68L)
 
@@ -25,19 +25,20 @@ Every entity in GlitchOfHands is a card with the same base shape:
 
 ```typescript
 interface Card {
-  id: string          // Unique ID (Chloe, Riverside, card_xxx...)
-  name: string        // Display title
-  type: CardType      // character | persona | scenario | location | challenge | director | style | rule
-  image: string       // Portrait / visual asset: data URL, https URL, or "" for initial fallback
-  definition: string  // Core prose snippet: appearance, tone, atmosphere, or rules
-  specs: CardSpecs    // Modular fields unlocked conditionally by type
-  created_at: string  // ISO timestamp
+  id: string; // Unique ID (Chloe, Riverside, card_xxx...)
+  name: string; // Display title
+  type: CardType; // character | persona | scenario | location | challenge | director | style | rule
+  image: string; // Portrait / visual asset: data URL, https URL, or "" for initial fallback
+  definition: string; // Core prose snippet: appearance, tone, atmosphere, or rules
+  specs: CardSpecs; // Modular fields unlocked conditionally by type
+  created_at: string; // ISO timestamp
 }
 ```
 
 ### 8 Card Types and Unlocked Fields
 
 Defined once in `getCardTypes()` — the single source of truth:
+
 - **`character`**: Speaking role. Unlocks `first_message`, `voice_preset`, `public_state`, `private_state`.
 - **`persona`**: Protagonist roleplay identity.
 - **`scenario`**: Situation, setup, or background context.
@@ -50,6 +51,7 @@ Defined once in `getCardTypes()` — the single source of truth:
 ### Epistemic Partitioning (Public & Private Brackets)
 
 `public_state` and `private_state` are multiline `KEY: value` text.
+
 - **Public brackets** go into every entity's prompt.
 - **Private brackets** reach only the card's own speaker turn and the director staging pass — other characters never see them, preventing AI telepathy without regex hackery.
 

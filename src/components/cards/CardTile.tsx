@@ -6,17 +6,17 @@
  * Includes direct equip/unequip toggle and discrete ⋯ menu button for inspection.
  */
 
-import type { Card } from '../../types/card.ts'
-import { CardAvatar } from './CardAvatar.tsx'
-import { TypeBadge } from './TypeBadge.tsx'
+import type { Card } from "../../types/card.ts";
+import { CardAvatar } from "./CardAvatar.tsx";
+import { TypeBadge } from "./TypeBadge.tsx";
 
 interface CardTileProps {
-  card: Card
-  selected: boolean
-  tagline?: string
-  builtin?: boolean
-  onToggle: (id: string) => void
-  onInspect: (card: Card) => void
+  card: Card;
+  selected: boolean;
+  tagline?: string;
+  builtin?: boolean;
+  onToggle: (id: string) => void;
+  onInspect: (card: Card) => void;
 }
 
 export function CardTile({
@@ -28,8 +28,7 @@ export function CardTile({
   onInspect,
 }: CardTileProps) {
   const displayTagline =
-    tagline ||
-    card.definition.slice(0, 60) + (card.definition.length > 60 ? '...' : '')
+    tagline || card.definition.slice(0, 60) + (card.definition.length > 60 ? "..." : "");
 
   return (
     <div
@@ -37,24 +36,22 @@ export function CardTile({
       tabIndex={0}
       onClick={() => onToggle(card.id)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onToggle(card.id)
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle(card.id);
         }
       }}
       className={`group flex items-center gap-3 w-full rounded-lg border p-2 text-left font-inter text-sm cursor-pointer transition-all ${
         selected
-          ? 'border-[#11aecc]/60 bg-[#11aecc]/10 shadow-[0_0_12px_rgba(17,174,204,0.15)]'
-          : 'border-transparent bg-transparent hover:bg-[#363840]/40 active:scale-[0.98]'
+          ? "border-[#11aecc]/60 bg-[#11aecc]/10 shadow-[0_0_12px_rgba(17,174,204,0.15)]"
+          : "border-transparent bg-transparent hover:bg-[#363840]/40 active:scale-[0.98]"
       }`}
     >
       <CardAvatar card={card} size="md" />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="font-semibold text-[#f2f7fa] truncate">
-            {card.name}
-          </span>
+          <span className="font-semibold text-[#f2f7fa] truncate">{card.name}</span>
           {!builtin && (
             <span className="text-[#11aecc] text-xs" title="Custom card">
               •
@@ -74,15 +71,15 @@ export function CardTile({
         title="Inspect card details"
         aria-label={`Inspect ${card.name}`}
         onClick={(e) => {
-          e.stopPropagation()
-          onInspect(card)
+          e.stopPropagation();
+          onInspect(card);
         }}
         className="flex-none w-7 h-7 rounded-md border border-transparent bg-transparent text-[#555d66] font-mono text-xs hover:bg-[#363840] hover:text-[#f2f7fa] flex items-center justify-center transition-colors"
       >
         ⋯
       </button>
     </div>
-  )
+  );
 }
 
 /**

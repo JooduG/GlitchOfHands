@@ -15,12 +15,7 @@
     "tmp/**/*",
     ".agents/scratchpad/**"
   ],
-  "geminiignore": [
-    "!**/.env.example",
-    "!**/*.md",
-    "!tmp/**/*",
-    "!src/**/*"
-  ],
+  "geminiignore": ["!**/.env.example", "!**/*.md", "!tmp/**/*", "!src/**/*"],
   "gitignore": [
     "node_modules",
     "dist",
@@ -42,8 +37,7 @@
     "files.exclude": {
       "**/.DS_Store": true,
       "**/node_modules/**": true,
-      "**/Thumbs.db": true,
-      "**/dist/**": true
+      "**/Thumbs.db": true
     }
   }
 }
