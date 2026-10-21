@@ -2,23 +2,45 @@
  * src/App.tsx
  * 🛸 GLITCHOFHANDS: APPLICATION WORKSPACE SHELL
  *
- * Implements the Card-Table Stage, Collapsible Binder Sidebar, and Chat Feed.
+ * Implements the Card-Table Stage, Collapsible Binder Sidebar, Chat Stream,
+ * and Composer with Perchance Text Plugin streaming integration.
  */
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import type { Card } from "./types/card.ts";
+import type { ChatMessage } from "./types/chat.ts";
+import { stripReply } from "./types/chat.ts";
 import { STARTER_CARDS } from "./data/starter-cards.ts";
 import { CardTile } from "./components/cards/CardTile.tsx";
 import { BoardSlot, EmptySlot } from "./components/cards/BoardSlot.tsx";
 import { CardModal } from "./components/cards/CardModal.tsx";
+import { MessageFeed } from "./components/chat/MessageFeed.tsx";
+import { Composer } from "./components/chat/Composer.tsx";
 
 export function App() {
   const [cards] = useState<Card[]>(STARTER_CARDS);
   const [boardIds, setBoardIds] = useState<string[]>(["Chloe", "Riverside", "CozyDirector"]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [inspectedCard, setInspectedCard] = useState<Card | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Chat State
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: "msg-init",
+      role: "char",
+      authorId: "Chloe",
+      authorName: "Chloe",
+      content:
+        "Hey hey! Welcome to Glitch of Hands. Chloe here — tap on my card or add another friend to the board table anytime!",
+    },
+  ]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
+  const [streamingSpeaker, setStreamingSpeaker] = useState("");
+  const activeStreamRef = useRef<{ stop?: () => void } | null>(null);
+  const messageCounterRef = useRef(1);
 
   // Toggle card on/off board
   const handleToggleBoard = (id: string) => {
@@ -50,6 +72,12 @@ export function App() {
       return { card, order };
     });
 
+  // Next speaker in rotation
+  const charactersOnBoard = boardSlots
+    .filter((s) => s.card.type === "character")
+    .map((s) => s.card);
+  const nextSpeaker = charactersOnBoard.length > 0 ? charactersOnBoard[0] : null;
+
   // Filtered binder cards
   const filteredCards = cards.filter((card) => {
     const matchesFilter = filterType === "all" || card.type === filterType;
@@ -58,6 +86,128 @@ export function App() {
       card.definition.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  // Turn Generation Routine (Player Send or Banter)
+  const executeTurn = useCallback(
+    async (userText?: string) => {
+      if (isGenerating) return;
+
+      let currentMessages = messages;
+      if (userText) {
+        messageCounterRef.current += 1;
+        const userMsg: ChatMessage = {
+          id: `user-${messageCounterRef.current}`,
+          role: "user",
+          content: userText,
+        };
+        currentMessages = [...messages, userMsg];
+        setMessages(currentMessages);
+      }
+
+      const speaker = nextSpeaker;
+      const speakerName = speaker ? speaker.name : "Narrator";
+
+      setIsGenerating(true);
+      setStreamingText("");
+      setStreamingSpeaker(speakerName);
+
+      try {
+        const rootApi = typeof window !== "undefined" ? window.root : undefined;
+
+        if (rootApi && rootApi.generateText) {
+          // Build instruction context from active cards
+          const cardContext = boardSlots
+            .map((s) => `[${s.card.type.toUpperCase()}: ${s.card.name}] ${s.card.definition}`)
+            .join("\n");
+          const recentDialogue = currentMessages
+            .slice(-6)
+            .map(
+              (m) => `${m.authorName || (m.role === "user" ? "You" : "Narrator")}: ${m.content}`,
+            )
+            .join("\n");
+
+          const instruction = `Story Table Setup:\n${cardContext}\n\nRecent History:\n${recentDialogue}\n\nYou are roleplaying as ${speakerName}. Continue the story in character. Output dialogue and actions naturally.`;
+
+          let accumulated = "";
+          const req = (
+            rootApi.generateText as (opts: unknown) => Promise<unknown> | { stop?: () => void }
+          )({
+            instruction,
+            onChunk: (chunk: { fullTextSoFar?: string; textChunk?: string }) => {
+              accumulated = chunk.fullTextSoFar || accumulated + (chunk.textChunk || "");
+              const cleaned = stripReply(accumulated, speakerName);
+              setStreamingText(cleaned);
+            },
+          });
+
+          activeStreamRef.current = req && typeof req === "object" && "stop" in req ? req : null;
+
+          const res = await req;
+          const rawText =
+            res && typeof res === "object" && "text" in res
+              ? String((res as { text: unknown }).text)
+              : String(res || accumulated);
+
+          const finalText = stripReply(rawText || accumulated, speakerName);
+
+          if (finalText.trim()) {
+            messageCounterRef.current += 1;
+            const aiMsg: ChatMessage = {
+              id: `ai-${messageCounterRef.current}`,
+              role: "char",
+              authorId: speaker ? speaker.id : null,
+              authorName: speakerName,
+              content: finalText,
+            };
+            setMessages((prev) => [...prev, aiMsg]);
+          }
+        } else {
+          // Local preview simulation if run outside Perchance iframe
+          await new Promise((r) => setTimeout(r, 800));
+          messageCounterRef.current += 1;
+          const aiMsg: ChatMessage = {
+            id: `ai-${messageCounterRef.current}`,
+            role: "char",
+            authorId: speaker ? speaker.id : null,
+            authorName: speakerName,
+            content: userText
+              ? `*Nods thoughtfully at "${userText.slice(0, 30)}..."* It's wonderful having everyone here at the table.`
+              : `*Glances across the table with a warm smile.* Shall we see what happens next?`,
+          };
+          setMessages((prev) => [...prev, aiMsg]);
+        }
+      } catch (err) {
+        console.warn("Generation stopped or encountered an error", err);
+      } finally {
+        setIsGenerating(false);
+        setStreamingText("");
+        setStreamingSpeaker("");
+        activeStreamRef.current = null;
+      }
+    },
+    [isGenerating, messages, nextSpeaker, boardSlots],
+  );
+
+  const handleStop = () => {
+    if (activeStreamRef.current && activeStreamRef.current.stop) {
+      activeStreamRef.current.stop();
+    }
+    setIsGenerating(false);
+    setStreamingText("");
+  };
+
+  const handleDeleteMessage = (id: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleClearStory = () => {
+    setMessages([]);
+  };
+
+  const statusText = `~${messages.length * 45} / 6k · ${boardIds.length} cards · ${messages.length} msgs`;
+  const composerPlaceholder = nextSpeaker
+    ? `Reply to ${nextSpeaker.name}...`
+    : "Play a character to the board...";
 
   return (
     <div className="flex h-screen w-full flex-col bg-[#05060a]/90 text-[#f2f7fa] overflow-hidden">
@@ -97,7 +247,7 @@ export function App() {
         <aside
           className={`${
             isSidebarOpen ? "w-80 md:w-96 translate-x-0" : "-translate-x-full w-0"
-          } flex flex-col flex-none border-r border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl transition-all duration-200 z-10 overflow-hidden`}
+          } flex flex-col flex-none border-r border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl transition-all duration-200 z-30 overflow-hidden absolute md:relative h-full`}
         >
           {/* Binder Header & Search */}
           <div className="p-4 border-b border-[#363840]/40 space-y-3">
@@ -105,6 +255,13 @@ export function App() {
               <h2 className="font-mono text-xs uppercase tracking-wider text-[#8b93a1]">
                 Card Binder ({filteredCards.length})
               </h2>
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(false)}
+                className="text-[#8b93a1] hover:text-[#f2f7fa] p-1 font-mono text-sm md:hidden"
+              >
+                ✕
+              </button>
             </div>
 
             <input
@@ -145,7 +302,7 @@ export function App() {
           </div>
 
           {/* Binder Card List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin">
             {filteredCards.map((card) => (
               <CardTile
                 key={card.id}
@@ -166,7 +323,7 @@ export function App() {
               <span className="font-mono text-xs uppercase tracking-wider text-[#8b93a1]">
                 Table Cast & Active Hand
               </span>
-              <span className="font-mono text-xs text-[#555d66]">
+              <span className="font-mono text-xs text-[#555d66] hidden sm:inline-block">
                 Click card to pick up / put down
               </span>
             </div>
@@ -186,21 +343,26 @@ export function App() {
             </div>
           </section>
 
-          {/* Chat Scene Feed Wireframe */}
-          <section className="flex flex-1 flex-col overflow-hidden p-6">
-            <div className="flex flex-1 flex-col justify-center items-center rounded-2xl border border-dashed border-[#363840] bg-[#0b101a]/30 p-8 text-center">
-              <div className="h-12 w-12 rounded-xl bg-[#11aecc]/10 border border-[#11aecc]/40 flex items-center justify-center text-xl mb-3">
-                💬
-              </div>
-              <h3 className="font-ubuntu text-base font-medium text-[#f2f7fa]">
-                Scene Stage Door Ready
-              </h3>
-              <p className="mt-1 max-w-sm text-xs text-[#8b93a1]">
-                Equip speaking characters to the board to begin automated rotation or interactive
-                chat.
-              </p>
-            </div>
-          </section>
+          {/* Chat Scene Feed & Stream */}
+          <MessageFeed
+            messages={messages}
+            streamingText={streamingText}
+            streamingSpeaker={streamingSpeaker}
+            isGenerating={isGenerating}
+            onDeleteMessage={handleDeleteMessage}
+          />
+
+          {/* Interactive Composer Footer */}
+          <Composer
+            placeholder={composerPlaceholder}
+            isGenerating={isGenerating}
+            statusText={statusText}
+            onSend={(text) => executeTurn(text)}
+            onBanter={() => executeTurn()}
+            onStop={handleStop}
+            onClearStory={handleClearStory}
+            onToggleBinder={() => setIsSidebarOpen((prev) => !prev)}
+          />
         </main>
       </div>
 
@@ -218,5 +380,5 @@ export default App;
 
 /**
  * CHANGELOG:
- * - 2026-10-21: Assembled GlitchOfHands application shell with Board Table rack and Binder sidebar.
+ * - 2026-10-21: Fully assembled GlitchOfHands application shell with Board Table rack, Binder, MessageFeed, and Composer.
  */
