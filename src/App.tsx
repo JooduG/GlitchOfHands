@@ -210,7 +210,7 @@ export function App() {
     : "Play a character to the board...";
 
   return (
-    <div className="flex h-screen w-full flex-col bg-[#05060a]/90 text-[#f2f7fa] overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-[#05060a]/90 text-[#f2f7fa] overflow-hidden">
       {/* Top Header */}
       <header className="flex h-14 flex-none items-center justify-between border-b border-[#363840]/60 px-4 md:px-6 backdrop-blur z-20 bg-[#05060a]/40">
         <div className="flex items-center gap-3">

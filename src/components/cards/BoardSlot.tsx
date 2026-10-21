@@ -34,12 +34,12 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
       style={{ borderTop: `3px solid ${typeEdgeColor}` }}
     >
       {/* Top Bar: Type Pill & Quick Actions */}
-      <div className="flex items-center justify-between gap-1">
-        <span className="font-mono text-[10px] font-medium tracking-[0.08em] uppercase px-2 py-0.5 rounded bg-[#05060a]/60 text-[#8b93a1] truncate max-w-[70px]">
+      <div className="flex items-center justify-between gap-1 w-full">
+        <span className="font-mono text-[9px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-[#05060a]/70 text-[#8b93a1] truncate flex-1">
           {meta?.label || card.type}
         </span>
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 flex-none">
           <button
             type="button"
             title="Inspect"
@@ -48,7 +48,7 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
               e.stopPropagation();
               onInspect(card);
             }}
-            className="w-5 h-5 rounded text-[#555d66] hover:text-[#f2f7fa] hover:bg-[#363840] flex items-center justify-center font-mono text-xs transition-colors"
+            className="w-5 h-5 rounded text-[#8b93a1] hover:text-[#f2f7fa] hover:bg-[#363840] flex items-center justify-center font-mono text-xs transition-colors"
           >
             ⋯
           </button>
@@ -60,7 +60,7 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
               e.stopPropagation();
               onRemove(card.id);
             }}
-            className="w-5 h-5 rounded text-[#555d66] hover:text-[#ef4444] hover:bg-[#363840] flex items-center justify-center text-xs transition-colors"
+            className="w-5 h-5 rounded text-[#8b93a1] hover:text-[#ef4444] hover:bg-[#ef4444]/20 flex items-center justify-center text-[10px] transition-colors"
           >
             ✕
           </button>
