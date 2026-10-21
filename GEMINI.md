@@ -23,6 +23,7 @@ This document governs the engineering standards, card simulation engine, React 1
 ## 🃏 The Card-Table Simulation Architecture
 
 ### 1. The 8 Card Types
+
 - `character`: Speaking role. Name, definition, first message, voice preset, public/private brackets.
 - `persona`: Protagonist roleplay identity.
 - `scenario`: World situation, background context, or setup.
@@ -33,6 +34,7 @@ This document governs the engineering standards, card simulation engine, React 1
 - `rule`: Hard behavioral or narrative constraints.
 
 ### 2. Table-as-Stage Mechanics
+
 - **The Board Hand**: 1 to 6 active cards placed on the board.
 - **Speaker Order**: Numbered badges (`#1`, `#2`...) compute dynamically across character cards on the board.
 - **Epistemic Partitioning**: Public state (`[KEY: VALUE]`) goes into all card prompts; private state reaches only that card's own speaker turn and the director pass.
@@ -45,3 +47,8 @@ This document governs the engineering standards, card simulation engine, React 1
 - **Styling**: Tailwind CSS v4 via `@tailwindcss/vite` and `@theme` in `src/index.css`.
 - **Target**: Single-file standalone HTML bundle via `vite-plugin-singlefile` deployed to Perchance.
 - **Testing & Verification**: `npm run build` (`tsc -b && vite build`) must always compile with 0 errors.
+
+## Linting and formatting
+
+- After making code changes, run `npx oxlint --fix`, then run `npx oxfmt`.
+- Before finishing, run `npx oxlint --deny-warnings --format=agent`.
