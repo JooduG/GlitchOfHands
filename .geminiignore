@@ -1,0 +1,18 @@
+# Auto-generated from ignores.master.json — DO NOT EDIT DIRECTLY
+*.bak
+*.log
+*.tmp
+.secrets
+**/.DS_Store
+**/.env*
+**/.git/**
+**/Thumbs.db
+**/build/**
+**/dist/**
+**/node_modules/**
+tmp/**/*
+.agents/scratchpad/**
+!**/.env.example
+!**/*.md
+!tmp/**/*
+!src/**/*

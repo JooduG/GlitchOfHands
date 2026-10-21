@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "sync": "node .agents/skills/glitchofhands/scripts/sync-ignores.js && node .agents/skills/design/scripts/sync-css.js",
+    "sync:ignores": "node .agents/skills/glitchofhands/scripts/sync-ignores.js",
+    "sync:css": "node .agents/skills/design/scripts/sync-css.js",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -15,10 +18,12 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "js-yaml": "^5.5.0",
     "oxlint": "^1.88.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3",

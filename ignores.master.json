@@ -1,0 +1,49 @@
+{
+  "antigravityignore": [],
+  "common": [
+    "*.bak",
+    "*.log",
+    "*.tmp",
+    ".secrets",
+    "**/.DS_Store",
+    "**/.env*",
+    "**/.git/**",
+    "**/Thumbs.db",
+    "**/build/**",
+    "**/dist/**",
+    "**/node_modules/**",
+    "tmp/**/*",
+    ".agents/scratchpad/**"
+  ],
+  "geminiignore": [
+    "!**/.env.example",
+    "!**/*.md",
+    "!tmp/**/*",
+    "!src/**/*"
+  ],
+  "gitignore": [
+    "node_modules",
+    "dist",
+    "dist-ssr",
+    "*.local",
+    ".env",
+    ".env.*",
+    "!.env.example",
+    ".secrets",
+    "tmp/",
+    "**/tmp/**",
+    ".agents/scratchpad/",
+    "*.tmp",
+    "*.bak",
+    "Thumbs.db",
+    ".DS_Store"
+  ],
+  "vscode": {
+    "files.exclude": {
+      "**/.DS_Store": true,
+      "**/node_modules/**": true,
+      "**/Thumbs.db": true,
+      "**/dist/**": true
+    }
+  }
+}
