@@ -941,7 +941,7 @@ export function App() {
           </section>
 
           {/* Feed */}
-          <section className="flex flex-1 flex-col overflow-hidden p-4 md:p-6 relative">
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 md:p-6 relative">
             <div
               ref={listRef}
               onScroll={() => {
@@ -950,7 +950,7 @@ export function App() {
                 stickBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
                 setJumpVisible(!stickBottom.current);
               }}
-              className="flex-1 overflow-y-auto space-y-3 pr-1"
+              className="flex min-h-0 flex-1 overflow-y-auto space-y-3 pr-1"
               aria-live="polite"
             >
               {hand.length === 0 && !live && (
@@ -1564,7 +1564,7 @@ function FeedBubble(props: { msg: Msg; onDelete: () => void }) {
         >
           {visible}
         </div>
-        <div className="mt-1 hidden gap-1 group-hover:flex">
+        <div className="mt-1 hidden gap-1 group-hover:flex [@media(hover:none)]:flex focus-within:flex">
           <button
             type="button"
             onClick={() => {
