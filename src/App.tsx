@@ -318,7 +318,7 @@ export function App() {
         {/* Right Stage: Narrative Feed & Bottom Board + Composer */}
         <main className="flex flex-1 flex-col h-full min-h-0 min-w-0 overflow-hidden relative">
           {/* Chat Scene Feed & Stream (Fills all available height) */}
-          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <div className="stage-feed-container flex-1 min-h-0 overflow-hidden flex flex-col">
             <MessageFeed
               messages={messages}
               streamingText={streamingText}
@@ -329,7 +329,7 @@ export function App() {
           </div>
 
           {/* Unified Bottom Footer: Board Rack + Composer */}
-          <div className="flex-none border-t border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl z-20">
+          <div className="bottom-stage-footer flex-none border-t border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl z-20">
             {/* Horizontal Board Table Rack */}
             <div className="px-3 pt-2.5 pb-1 md:px-5">
               <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-thin">

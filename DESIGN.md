@@ -111,3 +111,69 @@ One curve (`--physics: 150ms cubic-bezier(0.4,0,0.2,1)`), three verbs:
 - **Viewport Sovereignty**: `100dvh`, never `h-screen` (mobile address-bar jump).
 - **Radii**: `8px` sharp (buttons, inputs, slots, menus), `14px` standard (bubbles, cards, modals). Nothing in between.
 - **Restraint Budget**: Main column carries exactly two things: scene + stage door. Everything else lives in the sidebar or ⋯ modal.
+
+## 5. Macro Layout & Platform Overrides
+
+```css
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: linear-gradient(
+      120deg,
+      var(--color-background-gradient-1) 0%,
+      var(--color-background-gradient-2) 40%,
+      var(--color-background-gradient-3) 70%,
+      var(--color-background-gradient-4) 100%
+    ) no-repeat fixed;
+    background-size: cover;
+    color: var(--color-frisk);
+    font-family: var(--font-base);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Layout enforcement against unlayered platform resets (e.g. Perchance iframe normalize.css) */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+  height: 100% !important;
+}
+
+.stage-feed-container {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.bottom-stage-footer {
+  flex: 0 0 auto !important;
+  margin-top: auto !important;
+  width: 100% !important;
+}
+```
+
+

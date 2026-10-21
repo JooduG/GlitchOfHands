@@ -29,7 +29,7 @@ if (parts.length < 3) {
 }
 
 const frontmatter = yaml.load(parts[1]) || {};
-const colors = frontmatter.colors || {};
+const body = parts.slice(2).join("---").trim();
 
 const cssLines = [
   "/* [GENERATED] src/index.css — DO NOT EDIT TOKENS DIRECTLY */",
@@ -39,36 +39,54 @@ const cssLines = [
   "@theme {",
 ];
 
-// Add color variables
-for (const [key, value] of Object.entries(colors)) {
-  const tokenName = key.replace(/^color-/, "--color-");
-  cssLines.push(`  ${tokenName}: ${value};`);
+const categories = ["colors", "typography", "rounded", "spacing", "components"];
+
+for (const cat of categories) {
+  const tokens = frontmatter[cat] || {};
+  if (Object.keys(tokens).length > 0) {
+    cssLines.push(`  /* --- ${cat.toUpperCase()} --- */`);
+    for (const [key, value] of Object.entries(tokens)) {
+      const tokenName = key.startsWith("--")
+        ? key
+        : `--${key.replace(/^(color|font|radius|spacing)-/, "$1-")}`;
+      cssLines.push(`  ${tokenName}: ${value};`);
+    }
+  }
 }
 
-cssLines.push(
-  "}",
-  "",
-  "@layer base {",
-  "  html {",
-  "    color-scheme: dark;",
-  "  }",
-  "  body {",
-  "    margin: 0;",
-  "    min-height: 100dvh;",
-  "    background: linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%) no-repeat fixed;",
-  "    background-size: cover;",
-  "    color: #f2f7fa;",
-  '    font-family: "Inter", system-ui, -apple-system, sans-serif;',
-  "    -webkit-font-smoothing: antialiased;",
-  "  }",
-  "}",
-  "",
-);
+cssLines.push("}", "");
+
+// Append any markdown ```css ... ``` blocks from DESIGN.md (Single Source of Truth)
+const cssBlocks = [...body.matchAll(/```css([\s\S]*?)```/g)]
+  .map((m) => m[1].trim())
+  .join("\n\n");
+
+if (cssBlocks) {
+  // Hoist @import statements above everything else (CSS specification requires @import at the very top)
+  const imports = [];
+  const otherRules = [];
+  for (const block of cssBlocks.split("\n\n")) {
+    if (block.trim().startsWith("@import")) {
+      imports.push(block.trim());
+    } else {
+      otherRules.push(block.trim());
+    }
+  }
+
+  if (imports.length > 0) {
+    // Insert before @import "tailwindcss"; (index 2)
+    cssLines.splice(2, 0, ...imports, "");
+  }
+  if (otherRules.length > 0) {
+    cssLines.push(...otherRules, "");
+  }
+}
 
 fs.writeFileSync(indexCssPath, cssLines.join("\n"), "utf8");
-console.log("✓ Compiled DESIGN.md tokens into src/index.css");
+console.log("✓ Compiled DESIGN.md tokens & CSS rules into src/index.css");
 
 /**
  * CHANGELOG:
+ * - 2026-10-21: Extract CSS blocks from DESIGN.md body dynamically with @import hoisting (matching RPGlitch pattern).
  * - 2026-10-21: Initial creation of sync-css.js compiling DESIGN.md into Tailwind @theme.
  */
