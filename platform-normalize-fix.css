@@ -1,0 +1,50 @@
+/* platform-normalize-fix.css — re-assert Tailwind utilities the Perchance
+ * preview wrapper breaks. Plain CSS, NO @layer (unlayered beats layered).
+ *
+ * Why: every Perchance preview injects an UNLAYERED copy of normalize.css v3
+ * into <head>. In the cascade, ANY unlayered rule beats Tailwind v4's
+ * @layer utilities, so two platform rules were silently winning:
+ *   article,...,section{display:block}  → killed .flex on <section>/<main>,
+ *     the feed stopped being a flex column, the composer sank below the
+ *     fold (settings cog unclickable), and list sizing broke;
+ *   button,...{color:inherit; font:inherit; margin:0} → killed every text-*/
+  font-*/uppercase utility ON <button>/<input>/<textarea> (skip chevron lost
+ *     its emerald, cog its muted gray, send glyph its void-black).
+ *
+ * This file re-asserts exactly the utilities this app uses on those
+ * elements, generated from the live DOM (23 rules — nothing more). Because
+ * it is unlayered and imported LAST, it wins over the platform reset while
+ * leaving everything else alone.
+ *
+ * USAGE: put this file next to your CSS entry and import it LAST, e.g.
+ *   @import "tailwindcss";
+ *   @import "./your-other.css";
+ *   @import "./platform-normalize-fix.css";   <-- last, must stay plain CSS
+ * Do NOT wrap it in @layer (that would drop it back below the platform
+ * reset). If you add new text-*/font-*/display utilities on section / main /
+ * button / input / textarea later, mirror them here.
+ */
+
+header.flex { display: flex; }
+button.text-frisk { color: var(--color-frisk); }
+h1.text-base { font-size: var(--text-base); }
+h1.md\:text-lg { font-size: var(--text-lg); }
+h1.font-bold { font-weight: var(--font-weight-bold); }
+aside.flex { display: flex; }
+input.text-xs { font-size: var(--text-xs); line-height: var(--tw-leading, var(--text-xs--line-height)); }
+input.text-frisk { color: var(--color-frisk); }
+button.font-mono { font-family: var(--font-mono); }
+button.text-\[10px\] { font-size: 10px; }
+button.uppercase { text-transform: uppercase; }
+button.text-void { color: var(--color-void); }
+button.font-bold { font-weight: var(--font-weight-bold); }
+button.text-muted { color: var(--color-muted); }
+button.text-frozen { color: var(--color-frozen); }
+button.text-xs { font-size: var(--text-xs); line-height: var(--tw-leading, var(--text-xs--line-height)); }
+button.text-sm { font-size: var(--text-sm); line-height: var(--tw-leading, var(--text-sm--line-height)); }
+main.flex { display: flex; }
+section.flex { display: flex; }
+textarea.text-sm { font-size: var(--text-sm); line-height: var(--tw-leading, var(--text-sm--line-height)); }
+textarea.text-frisk { color: var(--color-frisk); }
+button.text-emerald { color: var(--color-emerald); }
+button.text-lg { font-size: var(--text-lg); line-height: var(--tw-leading, var(--text-lg--line-height)); }
