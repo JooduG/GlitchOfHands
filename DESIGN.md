@@ -2,10 +2,9 @@
 name: GlitchOfHands
 version: alpha
 colors:
-  color-background-gradient-1: "#0b101a"
-  color-background-gradient-2: "#14182b"
-  color-background-gradient-3: "#1e1b38"
-  color-background-gradient-4: "#16243b"
+  # Primary action color (spec role). Alias of cyan per the accent lock:
+  # cyan = presence/focus, emerald = go.
+  primary: "#11aecc"
   color-void: "#05060a"
   color-frisk: "#f2f7fa"
   color-gunmetal: "#363840"
@@ -19,32 +18,78 @@ colors:
   color-amber: "#fbbf24"
   color-blue: "#3b82f6"
   color-purple: "#a855f7"
-  color-orange: "#f97316"
-  color-rose: "#fb7185"
-  color-indigo: "#818cf8"
-  color-violet: "#c084fc"
-  color-teal: "#14b8a6"
-  color-lime: "#84cc16"
-  color-yellow: "#fde047"
+  # NOTE (2026-10-21, designmd-lint conformance): removed
+  # color-background-gradient-1..4 and the spare accents
+  # (orange/rose/indigo/violet/teal/lime/yellow). None were referenced by any
+  # component, class, or stylesheet — the page gradient now lives composed as
+  # backgrounds.app-gradient below, and the prose palette table never listed
+  # the spares. Restore any of them here if a design starts consuming it.
 typography:
-  font-base: '"Inter", sans-serif'
-  font-heading: '"Ubuntu", sans-serif'
-  font-mono: '"JetBrains Mono", monospace'
+  font-base:
+    fontFamily: '"Inter", sans-serif'
+  font-heading:
+    fontFamily: '"Ubuntu", sans-serif'
+  font-mono:
+    fontFamily: '"JetBrains Mono", monospace'
 rounded:
   radius-sharp: 8px
   radius-standard: 14px
 spacing:
   spacing-pixel: 1px
   spacing-unit: 0.25rem
+motion:
+  # Plain numbers and non-token strings on purpose: a millisecond string like
+  # "150ms" or a hex value here would look like a design token to
+  # 'designmd lint' (token-like-ignored) and warn as silently ignored.
+  duration-fast: 150
+  duration-standard: 300
+  physics-curve: "cubic-bezier(0.4, 0, 0.2, 1)"
+  scale-press: 0.97
+backgrounds:
+  app-gradient: "linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%)"
 components:
-  glass-chassis: rgba(54, 56, 64, 0.5)
-  glass-sunken: rgba(5, 6, 10, 0.5)
-  glass-elevated: rgba(242, 247, 250, 0.06)
-  glass-peak: "#191b21"
-  physics-curve: cubic-bezier(0.4, 0, 0.2, 1)
-  duration-fast: 150ms
-  duration-standard: 300ms
-  scale-press: "0.97"
+  # Every color above is referenced here (orphaned-tokens). Only spec
+  # sub-tokens are used (broken-ref). Pairs with both backgroundColor and
+  # textColor are WCAG AA safe (contrast-ratio); single-prop entries skip it.
+  surface-void:
+    backgroundColor: "{colors.color-void}"
+    textColor: "{colors.color-frisk}"
+    rounded: "{rounded.radius-standard}"
+  surface-chalk:
+    backgroundColor: "{colors.color-chalk}"
+    textColor: "{colors.color-frisk}"
+    rounded: "{rounded.radius-standard}"
+  surface-gunmetal:
+    backgroundColor: "{colors.color-gunmetal}"
+    textColor: "{colors.color-frisk}"
+    rounded: "{rounded.radius-sharp}"
+  button-go:
+    backgroundColor: "{colors.color-emerald}"
+    textColor: "{colors.color-void}"
+    rounded: "{rounded.radius-sharp}"
+  button-presence:
+    backgroundColor: "{colors.color-cyan}"
+    textColor: "{colors.color-void}"
+    rounded: "{rounded.radius-sharp}"
+  button-danger:
+    backgroundColor: "{colors.color-danger}"
+    rounded: "{rounded.radius-sharp}"
+  text-muted:
+    textColor: "{colors.color-muted}"
+  text-frozen:
+    textColor: "{colors.color-frozen}"
+  edge-persona:
+    backgroundColor: "{colors.color-pink}"
+  edge-scenario:
+    backgroundColor: "{colors.color-blue}"
+  edge-director:
+    backgroundColor: "{colors.color-amber}"
+  edge-style:
+    backgroundColor: "{colors.color-purple}"
+  brand-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.color-void}"
+    rounded: "{rounded.radius-sharp}"
 ---
 
 # Card-Table Design Language
@@ -87,6 +132,7 @@ A holistic design system for **GlitchOfHands**: one vision, one token set, one m
 | `--amber`    | `#fbbf24` | chaos/warning, director                      |
 | `--blue`     | `#3b82f6` | info, scenario                               |
 | `--purple`   | `#a855f7` | style accents                                |
+| `--primary`  | `#11aecc` | alias of cyan: primary action color          |
 
 Background: 4-stop void gradient, `120deg`, fixed: `#0b101a → #14182b → #1e1b38 → #16243b`. Dark-only.
 
@@ -122,13 +168,7 @@ One curve (`--physics: 150ms cubic-bezier(0.4,0,0.2,1)`), three verbs:
   body {
     margin: 0;
     min-height: 100dvh;
-    background: linear-gradient(
-      120deg,
-      var(--color-background-gradient-1) 0%,
-      var(--color-background-gradient-2) 40%,
-      var(--color-background-gradient-3) 70%,
-      var(--color-background-gradient-4) 100%
-    ) no-repeat fixed;
+    background: linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%) no-repeat fixed;
     background-size: cover;
     color: var(--color-frisk);
     font-family: var(--font-base);
