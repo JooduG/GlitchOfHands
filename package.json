@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "sync": "node .agents/skills/glitchofhands/scripts/sync-ignores.js && node .agents/skills/design/scripts/sync-css.js",
+    "sync": "npm run sync:ignores && npm run sync:css",
     "sync:ignores": "node .agents/skills/glitchofhands/scripts/sync-ignores.js",
     "sync:css": "node .agents/skills/design/scripts/sync-css.js",
     "lint": "oxlint",
+    "deploy:prepare": "npm run sync && npm run lint && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -17,6 +18,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@google/design.md": "^0.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.19.2",

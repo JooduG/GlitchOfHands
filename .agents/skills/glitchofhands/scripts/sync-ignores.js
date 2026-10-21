@@ -39,7 +39,29 @@ const geminiContent = [
 fs.writeFileSync(path.join(rootDir, '.geminiignore'), geminiContent, 'utf8')
 console.log('✓ Synced .geminiignore')
 
+// 3. Write .vscode/settings.json
+if (master.vscode) {
+  const vscodeDir = path.join(rootDir, '.vscode')
+  if (!fs.existsSync(vscodeDir)) {
+    fs.mkdirSync(vscodeDir, { recursive: true })
+  }
+  const settingsPath = path.join(vscodeDir, 'settings.json')
+  let existingSettings = {}
+  if (fs.existsSync(settingsPath)) {
+    try {
+      existingSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'))
+    } catch {
+      existingSettings = {}
+    }
+  }
+  const mergedSettings = { ...existingSettings, ...master.vscode }
+  fs.writeFileSync(settingsPath, JSON.stringify(mergedSettings, null, 2) + '\n', 'utf8')
+  console.log('✓ Synced .vscode/settings.json')
+}
+
 /**
  * CHANGELOG:
+ * - 2026-10-21: Added VS Code settings generation from master.vscode.
  * - 2026-10-21: Initial creation of lean sync-ignores.js.
  */
+
