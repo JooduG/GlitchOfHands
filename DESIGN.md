@@ -2,8 +2,6 @@
 name: GlitchOfHands
 version: alpha
 colors:
-  # Primary action color (spec role). Alias of cyan per the accent lock:
-  # cyan = presence/focus, emerald = go.
   primary: "#11aecc"
   color-void: "#05060a"
   color-frisk: "#f2f7fa"
@@ -18,12 +16,6 @@ colors:
   color-amber: "#fbbf24"
   color-blue: "#3b82f6"
   color-purple: "#a855f7"
-  # NOTE (2026-10-21, designmd-lint conformance): removed
-  # color-background-gradient-1..4 and the spare accents
-  # (orange/rose/indigo/violet/teal/lime/yellow). None were referenced by any
-  # component, class, or stylesheet — the page gradient now lives composed as
-  # backgrounds.app-gradient below, and the prose palette table never listed
-  # the spares. Restore any of them here if a design starts consuming it.
 typography:
   font-base:
     fontFamily: '"Inter", sans-serif'
@@ -38,9 +30,6 @@ spacing:
   spacing-pixel: 1px
   spacing-unit: 0.25rem
 motion:
-  # Plain numbers and non-token strings on purpose: a millisecond string like
-  # "150ms" or a hex value here would look like a design token to
-  # 'designmd lint' (token-like-ignored) and warn as silently ignored.
   duration-fast: 150
   duration-standard: 300
   physics-curve: "cubic-bezier(0.4, 0, 0.2, 1)"
@@ -48,9 +37,6 @@ motion:
 backgrounds:
   app-gradient: "linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%)"
 components:
-  # Every color above is referenced here (orphaned-tokens). Only spec
-  # sub-tokens are used (broken-ref). Pairs with both backgroundColor and
-  # textColor are WCAG AA safe (contrast-ratio); single-prop entries skip it.
   surface-void:
     backgroundColor: "{colors.color-void}"
     textColor: "{colors.color-frisk}"
@@ -168,7 +154,13 @@ One curve (`--physics: 150ms cubic-bezier(0.4,0,0.2,1)`), three verbs:
   body {
     margin: 0;
     min-height: 100dvh;
-    background: linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%)
+    background: linear-gradient(
+        120deg,
+        #0b101a 0%,
+        #14182b 40%,
+        #1e1b38 70%,
+        #16243b 100%
+      )
       no-repeat fixed;
     background-size: cover;
     color: var(--color-frisk);
