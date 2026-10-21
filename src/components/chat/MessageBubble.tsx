@@ -35,7 +35,7 @@ export function MessageBubble({ message, onDelete }: MessageBubbleProps) {
   if (isSystem) {
     return (
       <div className="flex w-full justify-center my-2 animate-[fadeSlideIn_180ms_ease-out]">
-        <div className="rounded-lg border border-dashed border-[#555d66] px-4 py-2 font-mono text-xs text-[#8b93a1]">
+        <div className="rounded-lg border border-dashed border-frozen px-4 py-2 font-mono text-xs text-muted">
           {message.content}
         </div>
       </div>
@@ -53,18 +53,18 @@ export function MessageBubble({ message, onDelete }: MessageBubbleProps) {
       >
         {/* Companion Speaker Label */}
         {!isUser && message.authorName && (
-          <span className="mb-1 ml-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#11aecc]">
+          <span className="mb-1 ml-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-cyan">
             {message.authorName}
           </span>
         )}
 
         {/* Collapsible Thoughts (<think>) */}
         {!isUser && thoughts && (
-          <details className="mb-2 w-full rounded-lg border border-[#f2f7fa]/10 bg-[#05060a]/40 p-2 text-xs text-[#8b93a1] backdrop-blur">
-            <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider select-none hover:text-[#f2f7fa]">
+          <details className="mb-2 w-full rounded-lg border border-frisk/10 bg-void/40 p-2 text-xs text-muted backdrop-blur">
+            <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider select-none hover:text-frisk">
               thoughts
             </summary>
-            <div className="mt-1 whitespace-pre-wrap font-sans text-xs leading-relaxed text-[#8b93a1]/90">
+            <div className="mt-1 whitespace-pre-wrap font-sans text-xs leading-relaxed text-muted/90">
               {thoughts}
             </div>
           </details>
@@ -74,8 +74,8 @@ export function MessageBubble({ message, onDelete }: MessageBubbleProps) {
         <div
           className={`rounded-2xl px-4 py-3 text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap break-words shadow-lg ${
             isUser
-              ? "bg-[#10b981] text-[#05060a] rounded-br-sm shadow-[0_0_12px_rgba(16,185,129,0.2)] font-normal"
-              : "bg-[#363840]/50 text-[#f2f7fa] border border-[#f2f7fa]/10 rounded-bl-sm backdrop-blur-md shadow-[0_8px_32px_rgba(5,6,10,0.5)]"
+              ? "bg-emerald text-void rounded-br-sm shadow-[0_0_12px_rgba(16,185,129,0.2)] font-normal"
+              : "bg-gunmetal/50 text-frisk border border-frisk/10 rounded-bl-sm backdrop-blur-md shadow-[0_8px_32px_rgba(5,6,10,0.5)]"
           }`}
         >
           {visible}
@@ -86,7 +86,7 @@ export function MessageBubble({ message, onDelete }: MessageBubbleProps) {
           <button
             type="button"
             onClick={handleCopy}
-            className="rounded px-1.5 py-0.5 font-mono text-[10px] text-[#555d66] hover:bg-[#363840] hover:text-[#f2f7fa] transition-colors"
+            className="rounded px-1.5 py-0.5 font-mono text-[10px] text-frozen hover:bg-gunmetal hover:text-frisk transition-colors"
           >
             {copied ? "copied" : "copy"}
           </button>
@@ -94,7 +94,7 @@ export function MessageBubble({ message, onDelete }: MessageBubbleProps) {
             <button
               type="button"
               onClick={() => onDelete(message.id)}
-              className="rounded px-1.5 py-0.5 font-mono text-[10px] text-[#555d66] hover:bg-[#ef4444]/20 hover:text-[#ef4444] transition-colors"
+              className="rounded px-1.5 py-0.5 font-mono text-[10px] text-frozen hover:bg-danger/20 hover:text-danger transition-colors"
             >
               delete
             </button>

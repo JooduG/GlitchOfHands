@@ -60,11 +60,11 @@ export function MessageFeed({
       >
         {messages.length === 0 && !isGenerating && (
           <div className="flex h-full flex-col items-center justify-center text-center p-8">
-            <div className="h-12 w-12 rounded-xl bg-[#11aecc]/10 border border-[#11aecc]/30 flex items-center justify-center text-2xl mb-3">
+            <div className="h-12 w-12 rounded-xl bg-cyan/10 border border-cyan/30 flex items-center justify-center text-2xl mb-3">
               🃏
             </div>
-            <p className="font-ubuntu text-sm font-medium text-[#f2f7fa]">The board is ready</p>
-            <p className="mt-1 text-xs text-[#8b93a1] max-w-xs">
+            <p className="font-ubuntu text-sm font-medium text-frisk">The board is ready</p>
+            <p className="mt-1 text-xs text-muted max-w-xs">
               Play characters to the board table or type a greeting to start the scene.
             </p>
           </div>
@@ -79,18 +79,18 @@ export function MessageFeed({
           <div className="flex w-full my-2 justify-start animate-[fadeSlideIn_180ms_ease-out]">
             <div className="flex flex-col max-w-[min(85%,640px)] items-start">
               {streamingSpeaker && (
-                <span className="mb-1 ml-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#11aecc]">
+                <span className="mb-1 ml-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-cyan">
                   {streamingSpeaker}
                 </span>
               )}
-              <div className="rounded-2xl px-4 py-3 text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap break-words shadow-lg bg-[#363840]/50 text-[#f2f7fa] border border-[#f2f7fa]/10 rounded-bl-sm backdrop-blur-md">
+              <div className="rounded-2xl px-4 py-3 text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap break-words shadow-lg bg-gunmetal/50 text-frisk border border-frisk/10 rounded-bl-sm backdrop-blur-md">
                 {streamingText ? (
                   streamingText
                 ) : (
                   <span className="inline-flex gap-1.5 items-center py-1">
-                    <span className="h-2 w-2 rounded-full bg-[#11aecc] animate-pulse" />
-                    <span className="h-2 w-2 rounded-full bg-[#11aecc] animate-pulse [animation-delay:200ms]" />
-                    <span className="h-2 w-2 rounded-full bg-[#11aecc] animate-pulse [animation-delay:400ms]" />
+                    <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" />
+                    <span className="h-2 w-2 rounded-full bg-cyan animate-pulse [animation-delay:200ms]" />
+                    <span className="h-2 w-2 rounded-full bg-cyan animate-pulse [animation-delay:400ms]" />
                   </span>
                 )}
               </div>
@@ -107,7 +107,7 @@ export function MessageFeed({
             shouldStickBottom.current = true;
             scrollToBottom();
           }}
-          className="absolute bottom-4 right-6 z-10 rounded-full bg-[#11aecc] px-3.5 py-1.5 font-ubuntu text-xs font-bold uppercase tracking-wider text-[#05060a] shadow-[0_0_12px_rgba(17,174,204,0.45)] hover:brightness-110 active:scale-95 transition-all"
+          className="absolute bottom-4 right-6 z-10 rounded-full bg-cyan px-3.5 py-1.5 font-ubuntu text-xs font-bold uppercase tracking-wider text-void shadow-[0_0_12px_rgba(17,174,204,0.45)] hover:brightness-110 active:scale-95 transition-all"
         >
           Latest ↓
         </button>

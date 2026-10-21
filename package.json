@@ -1,20 +1,4 @@
 {
-  "name": "glitchofhands",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "sync": "npm run sync:ignores && npm run sync:css",
-    "sync:ignores": "node .agents/skills/glitchofhands/scripts/sync-ignores.js",
-    "sync:css": "node .agents/skills/design/scripts/sync-css.js",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "lint:design": "npx designmd lint DESIGN.md",
-    "deploy:prepare": "npm run sync && npm run lint:fix && npm run lint:design && npm run build",
-    "preview": "vite preview"
-  },
   "dependencies": {
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
@@ -33,5 +17,23 @@
     "typescript": "~6.0.3",
     "vite": "^8.3.4",
     "vite-plugin-singlefile": "^2.3.4"
-  }
+  },
+  "name": "glitchofhands",
+  "private": true,
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "deploy:prepare": "npm run sync && npm run lint:fix && npm run lint:design && npm run build",
+    "dev": "vite",
+    "lint": "oxlint",
+    "lint:classes": "node .agents/skills/design/scripts/sync-classes.js --check",
+    "lint:design": "npx designmd lint DESIGN.md",
+    "lint:fix": "oxlint --fix",
+    "preview": "vite preview",
+    "sync": "npm run sync:ignores && npm run sync:css && npm run sync:classes",
+    "sync:classes": "node .agents/skills/design/scripts/sync-classes.js",
+    "sync:css": "node .agents/skills/design/scripts/sync-css.js",
+    "sync:ignores": "node .agents/skills/glitchofhands/scripts/sync-ignores.js"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

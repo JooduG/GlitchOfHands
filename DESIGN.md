@@ -168,7 +168,8 @@ One curve (`--physics: 150ms cubic-bezier(0.4,0,0.2,1)`), three verbs:
   body {
     margin: 0;
     min-height: 100dvh;
-    background: linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%) no-repeat fixed;
+    background: linear-gradient(120deg, #0b101a 0%, #14182b 40%, #1e1b38 70%, #16243b 100%)
+      no-repeat fixed;
     background-size: cover;
     color: var(--color-frisk);
     font-family: var(--font-base);
@@ -177,7 +178,9 @@ One curve (`--physics: 150ms cubic-bezier(0.4,0,0.2,1)`), three verbs:
 }
 
 /* Layout enforcement against unlayered platform resets (e.g. Perchance iframe normalize.css) */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -215,5 +218,3 @@ main {
   width: 100% !important;
 }
 ```
-
-

@@ -11,7 +11,7 @@
     "**/Thumbs.db",
     "**/build/**",
     "**/dist/**",
-    "**/node_modules/**",    
+    "**/node_modules/**",
     "**scribbles.md",
     "tmp/**/*",
     ".agents/scratchpad/**"

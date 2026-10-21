@@ -43,17 +43,17 @@ export function CardTile({
       }}
       className={`group flex items-center gap-3 w-full rounded-lg border p-2 text-left font-inter text-sm cursor-pointer transition-all ${
         selected
-          ? "border-[#11aecc]/60 bg-[#11aecc]/10 shadow-[0_0_12px_rgba(17,174,204,0.15)]"
-          : "border-transparent bg-transparent hover:bg-[#363840]/40 active:scale-[0.98]"
+          ? "border-cyan/60 bg-cyan/10 shadow-[0_0_12px_rgba(17,174,204,0.15)]"
+          : "border-transparent bg-transparent hover:bg-gunmetal/40 active:scale-[0.98]"
       }`}
     >
       <CardAvatar card={card} size="md" />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="font-semibold text-[#f2f7fa] truncate">{card.name}</span>
+          <span className="font-semibold text-frisk truncate">{card.name}</span>
           {!builtin && (
-            <span className="text-[#11aecc] text-xs" title="Custom card">
+            <span className="text-cyan text-xs" title="Custom card">
               •
             </span>
           )}
@@ -63,7 +63,7 @@ export function CardTile({
           <TypeBadge type={card.type} />
         </div>
 
-        <p className="text-xs text-[#8b93a1] truncate mt-1">{displayTagline}</p>
+        <p className="text-xs text-muted truncate mt-1">{displayTagline}</p>
       </div>
 
       <button
@@ -74,7 +74,7 @@ export function CardTile({
           e.stopPropagation();
           onInspect(card);
         }}
-        className="flex-none w-7 h-7 rounded-md border border-transparent bg-transparent text-[#555d66] font-mono text-xs hover:bg-[#363840] hover:text-[#f2f7fa] flex items-center justify-center transition-colors"
+        className="flex-none w-7 h-7 rounded-md border border-transparent bg-transparent text-frozen font-mono text-xs hover:bg-gunmetal hover:text-frisk flex items-center justify-center transition-colors"
       >
         ⋯
       </button>

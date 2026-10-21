@@ -28,12 +28,12 @@ export function CardAvatar({ card, size = "md" }: CardAvatarProps) {
 
   return (
     <div
-      className={`${sizeClasses} flex-none rounded-lg flex items-center justify-center overflow-hidden bg-[rgba(17,174,204,0.12)] font-ubuntu font-bold leading-none text-[#f2f7fa] border border-[#363840]/40`}
+      className={`${sizeClasses} flex-none rounded-lg flex items-center justify-center overflow-hidden bg-cyan/12 font-ubuntu font-bold leading-none text-frisk border border-gunmetal/40`}
     >
       {img ? (
         <img src={img} alt={card?.name || ""} className="w-full h-full object-cover" />
       ) : (
-        <span className="font-ubuntu font-bold text-[#f2f7fa] select-none">
+        <span className="font-ubuntu font-bold text-frisk select-none">
           {initialOf(card?.name)}
         </span>
       )}

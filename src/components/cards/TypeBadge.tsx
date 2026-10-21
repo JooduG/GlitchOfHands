@@ -20,7 +20,7 @@ export function TypeBadge({ type, label }: TypeBadgeProps) {
   const dotColor = meta?.color || "#8b93a1";
 
   return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-medium tracking-[0.08em] uppercase px-2 py-0.5 rounded-md bg-[#05060a]/60 text-[#8b93a1] max-w-full whitespace-nowrap overflow-hidden border border-[#363840]/30">
+    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-medium tracking-[0.08em] uppercase px-2 py-0.5 rounded-md bg-void/60 text-muted max-w-full whitespace-nowrap overflow-hidden border border-gunmetal/30">
       <i className="w-1.5 h-1.5 rounded-full flex-none" style={{ backgroundColor: dotColor }} />
       <span className="truncate">{displayLabel}</span>
     </span>
