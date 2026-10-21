@@ -315,54 +315,52 @@ export function App() {
           </div>
         </aside>
 
-        {/* Right Stage: Board Table & Chat Scene */}
-        <main className="flex flex-1 flex-col overflow-hidden">
-          {/* Horizontal Board Table Rack */}
-          <section className="flex-none border-b border-[#363840]/60 bg-[#05060a]/60 p-4 backdrop-blur">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="font-mono text-xs uppercase tracking-wider text-[#8b93a1]">
-                Table Cast & Active Hand
-              </span>
-              <span className="font-mono text-xs text-[#555d66] hidden sm:inline-block">
-                Click card to pick up / put down
-              </span>
+        {/* Right Stage: Narrative Feed & Bottom Board + Composer */}
+        <main className="flex flex-1 flex-col h-full min-h-0 min-w-0 overflow-hidden relative">
+          {/* Chat Scene Feed & Stream (Fills all available height) */}
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <MessageFeed
+              messages={messages}
+              streamingText={streamingText}
+              streamingSpeaker={streamingSpeaker}
+              isGenerating={isGenerating}
+              onDeleteMessage={handleDeleteMessage}
+            />
+          </div>
+
+          {/* Unified Bottom Footer: Board Rack + Composer */}
+          <div className="flex-none border-t border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl z-20">
+            {/* Horizontal Board Table Rack */}
+            <div className="px-3 pt-2.5 pb-1 md:px-5">
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
+                {boardSlots.map(({ card, order }) => (
+                  <BoardSlot
+                    key={card.id}
+                    card={card}
+                    order={order}
+                    onRemove={handleRemoveFromBoard}
+                    onInspect={setInspectedCard}
+                  />
+                ))}
+
+                {boardIds.length < 6 && (
+                  <EmptySlot text={`Slot ${boardIds.length + 1} (Empty)`} />
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
-              {boardSlots.map(({ card, order }) => (
-                <BoardSlot
-                  key={card.id}
-                  card={card}
-                  order={order}
-                  onRemove={handleRemoveFromBoard}
-                  onInspect={setInspectedCard}
-                />
-              ))}
-
-              {boardIds.length < 6 && <EmptySlot text={`Slot ${boardIds.length + 1} (Empty)`} />}
-            </div>
-          </section>
-
-          {/* Chat Scene Feed & Stream */}
-          <MessageFeed
-            messages={messages}
-            streamingText={streamingText}
-            streamingSpeaker={streamingSpeaker}
-            isGenerating={isGenerating}
-            onDeleteMessage={handleDeleteMessage}
-          />
-
-          {/* Interactive Composer Footer */}
-          <Composer
-            placeholder={composerPlaceholder}
-            isGenerating={isGenerating}
-            statusText={statusText}
-            onSend={(text) => executeTurn(text)}
-            onBanter={() => executeTurn()}
-            onStop={handleStop}
-            onClearStory={handleClearStory}
-            onToggleBinder={() => setIsSidebarOpen((prev) => !prev)}
-          />
+            {/* Interactive Composer Bar */}
+            <Composer
+              placeholder={composerPlaceholder}
+              isGenerating={isGenerating}
+              statusText={statusText}
+              onSend={(text) => executeTurn(text)}
+              onBanter={() => executeTurn()}
+              onStop={handleStop}
+              onClearStory={handleClearStory}
+              onToggleBinder={() => setIsSidebarOpen((prev) => !prev)}
+            />
+          </div>
         </main>
       </div>
 

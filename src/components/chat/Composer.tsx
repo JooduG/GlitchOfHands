@@ -65,7 +65,7 @@ export function Composer({
   };
 
   return (
-    <footer className="border-t border-[#363840]/60 bg-[#0b101a]/95 backdrop-blur-xl p-3 md:p-4 z-20">
+    <div className="p-3 md:px-5 md:pb-4 md:pt-2">
       <div className="max-w-4xl mx-auto flex flex-col gap-2">
         {/* Status Line */}
         <div className="flex items-center justify-between px-1 text-[11px] font-mono text-[#8b93a1]">
@@ -176,7 +176,7 @@ export function Composer({
           )}
         </form>
       </div>
-    </footer>
+    </div>
   );
 }
 
