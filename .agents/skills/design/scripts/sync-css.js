@@ -6,14 +6,16 @@
  * Then appends, in order:
  *   1. the §5 "Macro Layout & Platform Overrides" fenced css block, extracted
  *      live from DESIGN.md body (single source of truth — never duplicate it
- *      by hand into index.css, sync overwrites that file);
- *   2. platform-normalize-fix.css inlined verbatim (unlayered plain CSS, MUST
- *      stay last: it beats the Perchance preview wrapper's unlayered
- *      normalize.css, which would otherwise kill .flex on section/main and
- *      every text- and font-class on buttons/inputs).
+ *      by hand into index.css, sync overwrites that file). §5 also carries
+ *      the platform element-enforcement rules (section.flex, button.text-*,
+ *      …) that beat the Perchance preview wrapper's unlayered normalize.css;
+ *      they MUST stay unlayered and last in the fence.
+ *   2. a minimal fallback (section/header/aside/main/footer/nav .flex) that
+ *      is emitted only if the §5 fence is missing — layout can never regress
+ *      silently again.
  *
- * If a source is missing the sync warns (not fails) so a half-migrated tree
- * still builds; sync-classes --check reports the coverage gap in CI.
+ * NOTE: platform-normalize-fix.css is DEPRECATED (2026-10-22): its rules moved
+ * into DESIGN.md §5. If the file still exists, sync warns and ignores it.
  */
 
 import fs from "fs";
@@ -97,20 +99,20 @@ if (sec5 && sec5[1].trim()) {
   );
 }
 
-// 2. platform-normalize-fix.css, inlined last (unlayered beats the wrapper reset)
+// 2. platform-normalize-fix.css is deprecated: rules live in DESIGN.md §5 now.
+// Warn if the stale file still exists so it can be deleted (single source).
 const normPath = normalizeCandidates.find((p) => fs.existsSync(p));
 if (normPath) {
-  extra +=
-    "\n/* --- platform-normalize-fix.css (unlayered, keep last) --- */\n" +
-    fs.readFileSync(normPath, "utf8").trim() +
-    "\n";
-  console.log(`✓ Inlined ${path.relative(rootDir, normPath)} last`);
-} else {
   console.warn(
-    "[sync-css] WARNING: platform-normalize-fix.css not found — emitting minimal fallback so .flex survives the platform reset.",
+    `[sync-css] DEPRECATED: ${path.relative(rootDir, normPath)} still exists — its rules moved to DESIGN.md §5 and this file is now ignored. Delete it.`,
+  );
+}
+if (!sec5 || !sec5[1].trim()) {
+  console.warn(
+    "[sync-css] WARNING: §5 fence missing — emitting minimal fallback so .flex survives the platform reset.",
   );
   extra +=
-    "\n/* --- fallback: display enforcement (platform-normalize-fix.css missing) --- */\n" +
+    "\n/* --- fallback: display enforcement (§5 fence missing) --- */\n" +
     "section.flex, header.flex, aside.flex, main.flex, footer.flex, nav.flex { display: flex !important; }\n" +
     "section.flex { flex-direction: column !important; min-height: 0 !important; }\n";
 }
@@ -127,4 +129,8 @@ console.log("✓ Compiled DESIGN.md tokens into src/index.css");
  *   minimal fallback (section/header/aside/main/footer/nav .flex) — HEAD
  *   deleted the fix file and the feed section fell back to display:block,
  *   pushing the composer + settings menu below the fold.
+ * - 2026-10-22 (final): platform-normalize-fix.css deprecated — its rules
+ *   moved into DESIGN.md §5 (single source; sync-classes audits §5 coverage).
+ *   The file is now ignored with a delete-me warning; only the §5-missing
+ *   fallback remains.
  */

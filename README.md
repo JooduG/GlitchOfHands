@@ -127,12 +127,20 @@ Streaming with a deck (recommended for UI):
 ```js
 let c = root.chatPlugin.getStarterCardById("Chloe");
 let equipped = [root.chatPlugin.getStarterCardById("Riverside")];
-let p = root.chatPlugin.buildDeckPrompt(c, equipped, [{role:"user", content:"hi"}], "", "");
+let p = root.chatPlugin.buildDeckPrompt(
+  c,
+  equipped,
+  [{ role: "user", content: "hi" }],
+  "",
+  "",
+);
 let req = root.generateText({
   instruction: p.instruction,
   startWith: p.startWith,
   stopSequences: p.stopSequences,
-  onChunk: (d) => { replyEl.textContent = d.fullTextSoFar; },
+  onChunk: (d) => {
+    replyEl.textContent = d.fullTextSoFar;
+  },
 });
 // req.stop() aborts
 let res = await req;

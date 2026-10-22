@@ -824,16 +824,23 @@ export function App() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-xs text-muted tabular-nums hidden sm:inline-block">
-            {hand.length}/{TABLE_MAX} ON BOARD · {library.length} CARDS
-          </span>
-          <span className="rounded bg-chalk px-2.5 py-1 text-xs font-mono text-cyan border border-cyan/30">
-            {hasDirector(S()) ? "🎬 Director staging" : "⚡ Table Active"}
-          </span>
+          {hasDirector(S()) && (
+            <span className="rounded bg-chalk px-2.5 py-1 text-xs font-mono text-cyan border border-cyan/30">
+              🎬 Director staging
+            </span>
+          )}
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
+        {/* click-outside closes the binder */}
+        {sidebarOpen && (
+          <div
+            className="absolute inset-0 z-[5]"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
         {/* Binder sidebar */}
         <aside
           className={`${
@@ -917,14 +924,6 @@ export function App() {
         {/* Stage */}
         <main className="flex flex-1 flex-col overflow-hidden">
           <section className="flex-none border-b border-gunmetal/60 bg-void/60 p-4 backdrop-blur">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="font-mono text-xs uppercase tracking-wider text-muted">
-                Table Cast &amp; Active Hand
-              </span>
-              <span className="font-mono text-xs text-frozen">
-                Click card to pick up / put down
-              </span>
-            </div>
             <div className="flex items-center gap-3 overflow-x-auto pb-2">
               {hand.map((card) => (
                 <BoardSlot
@@ -1177,7 +1176,7 @@ export function App() {
                       aria-label="Skip my turn — next character speaks"
                       onClick={() => void generateTurn(null)}
                       disabled={!chars.length}
-                      className="flex h-11 w-12 flex-none items-center justify-center text-emerald hover:bg-emerald/10 disabled:opacity-30 border-l border-gunmetal/60 text-lg"
+                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-void text-lg font-bold hover:brightness-110 disabled:opacity-30 border-l border-void/30"
                     >
                       »
                     </button>

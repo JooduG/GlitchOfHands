@@ -228,6 +228,115 @@ main {
   margin-top: auto !important;
   width: 100% !important;
 }
+
+/* --- Platform element enforcement (single source; compiled by sync-css.js) ---
+ * Every Perchance preview injects an UNLAYERED normalize.css v3. Unlayered
+ * rules beat Tailwind v4's @layer utilities, so two resets silently win:
+ *   section/header/...{display:block} kills .flex on those elements (the feed
+ *     stops being a flex column, the composer sinks below the fold);
+ *   button/input/...{color:inherit;font:inherit} kills text-/font- utilities.
+ * The rules below re-assert exactly the utilities this app uses on those
+ * elements. They MUST stay unlayered (no @layer) and be appended LAST.
+ * Coverage is audited by sync-classes.js (`missing` = add here, `orphaned` =
+ * prune here, P3). */
+header.flex {
+  display: flex;
+}
+button.text-frisk {
+  color: var(--color-frisk);
+}
+h1.text-base {
+  font-size: var(--text-base);
+}
+@media (width>=48rem) {
+  h1.md\:text-lg {
+    font-size: var(--text-lg);
+    line-height: var(--tw-leading, var(--text-lg--line-height));
+  }
+}
+h1.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+aside.flex {
+  display: flex;
+}
+input.text-xs {
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, var(--text-xs--line-height));
+}
+input.text-frisk {
+  color: var(--color-frisk);
+}
+button.font-mono {
+  font-family: var(--font-mono);
+}
+button.text-\[10px\] {
+  font-size: 10px;
+}
+button.uppercase {
+  text-transform: uppercase;
+}
+button.text-void {
+  color: var(--color-void);
+}
+button.text-cyan {
+  color: var(--color-cyan);
+}
+button.text-frozen {
+  color: var(--color-frozen);
+}
+button.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+button.text-muted {
+  color: var(--color-muted);
+}
+button.text-frozen {
+  color: var(--color-frozen);
+}
+button.text-xs {
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, var(--text-xs--line-height));
+}
+button.text-sm {
+  font-size: var(--text-sm);
+  line-height: var(--tw-leading, var(--text-sm--line-height));
+}
+main.flex {
+  display: flex;
+}
+section.flex {
+  display: flex;
+}
+section.flex {
+  flex-direction: column;
+  min-height: 0;
+}
+textarea.text-sm {
+  font-size: var(--text-sm);
+  line-height: var(--tw-leading, var(--text-sm--line-height));
+}
+textarea.text-frisk {
+  color: var(--color-frisk);
+}
+button.hover\:text-frisk:hover {
+  color: var(--color-frisk);
+}
+button.hover\:text-danger:hover {
+  color: var(--color-danger);
+}
+button.font-black {
+  --tw-font-weight: var(--font-weight-black);
+  font-weight: var(--font-weight-black);
+}
+button.font-medium {
+  --tw-font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-medium);
+}
+button.text-lg {
+  font-size: var(--text-lg);
+  line-height: var(--tw-leading, var(--text-lg--line-height));
+}
 ```
 
 ## 6. Components

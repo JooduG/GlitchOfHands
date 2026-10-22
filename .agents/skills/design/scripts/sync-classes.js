@@ -28,7 +28,7 @@
  * Normalize coverage (platform reset vs utilities — warn-only, never rewrites):
  *   every text-, font-, uppercase- and display-class used on
  *   section/main/button/input/textarea/select/h1 in src/ should have a
- *   matching override in platform-normalize-fix.css (else the Perchance
+ *   matching override in the DESIGN.md §5 fence (else the Perchance
  *   wrapper's unlayered normalize.css eats it), and every override should
  *   still match something in src/ (stale-rule purge, P3). Reported on every
  *   run; --check does NOT fail on these (variant/responsive matching is fuzzy).
@@ -262,24 +262,22 @@ export function auditNormalizeCoverage(fileTexts, cssText) {
   const missing = [...used].filter((pair) => {
     const dot = pair.indexOf('.')
     const sel = pair.slice(0, dot) + '.' + escapeClass(pair.slice(dot + 1))
-    return !cssText.includes(sel + ' {') && !cssText.includes(sel + '{')
+    // NB: also match `sel:` so state-variant rules (`sel:hover {`) count.
+    return !cssText.includes(sel + ' {') && !cssText.includes(sel + '{') && !cssText.includes(sel + ':')
   })
   const orphaned = []
   const selRe = /^([a-z0-9]+)\.([^\s{]+)\s*\{/gm
   let s
   selRe.lastIndex = 0
   while ((s = selRe.exec(cssText))) {
-    const cls = s[2].replace(/\\(.)/g, '$1')
+    // Unescape, then drop trailing state pseudos: the code holds the bare
+    // class (`hover:text-frisk`), never the `:hover` suffix in the rule.
+    const cls = s[2].replace(/\\(.)/g, '$1').replace(/:(hover|focus|focus-within|active|disabled)$/, '')
     const found = fileTexts.some(({ text }) => text.includes(cls))
     if (!found) orphaned.push(`${s[1]}.${s[2]}`)
   }
   return { missing, orphaned }
 }
-
-const NORMALIZE_CANDIDATES = [
-  'platform-normalize-fix.css',
-  'src/platform-normalize-fix.css',
-]
 
 function walk(dir, files) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -349,24 +347,27 @@ function main() {
   }
 
   // Normalize coverage audit (warn-only): platform reset vs utilities.
-  const normPath = NORMALIZE_CANDIDATES.map((p) => path.join(rootDir, p)).find(
-    (p) => fs.existsSync(p),
+  // Single source is the DESIGN.md §5 fence (compiled into index.css by
+  // sync-css.js) — platform-normalize-fix.css is deprecated and ignored.
+  const designText = fs.readFileSync(designMdPath, 'utf8')
+  const sec5 = designText.match(
+    /## 5\. Macro Layout & Platform Overrides[\s\S]*?```css\n([\s\S]*?)```/,
   )
-  if (!normPath) {
-    console.log('[sync-classes] Normalize coverage: SKIPPED (platform-normalize-fix.css not found)')
+  if (!sec5 || !sec5[1].trim()) {
+    console.log('[sync-classes] Normalize coverage: SKIPPED (§5 fence not found in DESIGN.md)')
   } else {
-    const cssText = fs.readFileSync(normPath, 'utf8')
+    const cssText = sec5[1]
     const fileTexts = files.map((full) => ({ text: fs.readFileSync(full, 'utf8') }))
     const { missing, orphaned } = auditNormalizeCoverage(fileTexts, cssText)
     if (!missing.length && !orphaned.length) {
       console.log('[sync-classes] Normalize coverage: OK')
     } else {
       for (const m of missing.slice(0, 40)) {
-        console.log(`[sync-classes] Normalize coverage: MISSING override for \`${m}\` — add it to ${path.relative(rootDir, normPath)}`)
+        console.log(`[sync-classes] Normalize coverage: MISSING override for \`${m}\` — add it to the DESIGN.md §5 fence`)
       }
       if (missing.length > 40) console.log(`[sync-classes] … +${missing.length - 40} more missing`)
       for (const o of orphaned.slice(0, 20)) {
-        console.log(`[sync-classes] Normalize coverage: ORPHANED override \`${o}\` matches nothing in src/ — prune it (P3)`)
+        console.log(`[sync-classes] Normalize coverage: ORPHANED override \`${o}\` matches nothing in src/ — prune it from §5 (P3)`)
       }
       if (orphaned.length > 20) console.log(`[sync-classes] … +${orphaned.length - 20} more orphaned`)
     }
@@ -386,4 +387,6 @@ if (invokedAsScript) main()
  * CHANGELOG:
  * - 2026-10-21: Created — DESIGN.md-driven hardcoded-class hunter (hex, 8-digit hex, whole-value rgba; dry-run/check/scope flags).
  * - 2026-10-22: Added warn-only platform-normalize coverage audit (missing + orphaned overrides).
+ * - 2026-10-22 (final): audit reads the DESIGN.md §5 fence as the single
+ *   source (platform-normalize-fix.css deprecated); messages repointed at §5.
  */
