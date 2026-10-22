@@ -120,13 +120,13 @@ A holistic design system for **GlitchOfHands**: one vision, one token set, one m
 | `--amber`    | `#fbbf24` | chaos/warning, director                      |
 | `--blue`     | `#3b82f6` | info, scenario                               |
 | `--purple`   | `#a855f7` | style accents                                |
-| `--orange`  | `#f97316` | warning buttons (reserved) |
-| `--rose`    | `#fb7185` | error text on red washes   |
-| `--indigo`  | `#818cf8` | reserved                   |
-| `--violet`  | `#c084fc` | reserved                   |
-| `--teal`    | `#14b8a6` | reserved                   |
-| `--lime`    | `#84cc16` | reserved                   |
-| `--yellow`  | `#fde047` | reserved                   |
+| `--orange`   | `#f97316` | warning buttons (reserved)                   |
+| `--rose`     | `#fb7185` | error text on red washes                     |
+| `--indigo`   | `#818cf8` | reserved                                     |
+| `--violet`   | `#c084fc` | reserved                                     |
+| `--teal`     | `#14b8a6` | reserved                                     |
+| `--lime`     | `#84cc16` | reserved                                     |
+| `--yellow`   | `#fde047` | reserved                                     |
 | `--primary`  | `#11aecc` | alias of cyan: primary action color          |
 
 Background: 4-stop void gradient, `120deg`, fixed: `#0b101a → #14182b → #1e1b38 → #16243b`. Dark-only.
@@ -331,6 +331,6 @@ Adopt next: eyebrow budget, signature colors, Satisfy moment.
 - `imageglitch` (workspace `scratch/generators/imageglitch/`): the taste —
   tokens, fonts, radii, physics, button/menu/overlay patterns, playful voice.
 - `rpglitch` (workspace `scratch/rpglitch-src/`, from
-  https://github.com/JooduG/RPGlitch): the governance — token pipeline and
+  `https://github.com/JooduG/RPGlitch`): the governance — token pipeline and
   4-tier architecture, glass elevations, grounded motion law, bits-ui
   headless patterns, motion standards, anti-slop taste doc, clinical voice.
