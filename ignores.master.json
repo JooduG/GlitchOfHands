@@ -32,7 +32,8 @@
     "*.tmp",
     "*.bak",
     "Thumbs.db",
-    ".DS_Store"
+    ".DS_Store",
+    "**scribbles.md"
   ],
   "vscode": {
     "files.exclude": {
