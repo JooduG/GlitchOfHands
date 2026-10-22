@@ -37,7 +37,7 @@ export function BoardSlot({ card, onToggle, onInspect, fluid = false, selected =
           onToggle(card.id);
         }
       }}
-      className={`group relative flex flex-col justify-between ${fluid ? "w-full min-w-0" : "w-32 flex-none"} min-h-41 rounded-xl border p-2.5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] transition-all text-left cursor-pointer ${
+      className={`group relative flex flex-col justify-between ${fluid ? "w-full min-w-0" : "w-32 flex-none"} aspect-[3/4] rounded-xl border p-2.5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] transition-all text-left cursor-pointer ${
         selected
           ? "border-cyan/60 bg-cyan/10 shadow-[0_0_12px_rgba(17,174,204,0.25)]"
           : "border-frisk/10 bg-frisk/5 hover:border-frisk/25"
@@ -91,4 +91,6 @@ export function BoardSlot({ card, onToggle, onInspect, fluid = false, selected =
  * - 2026-10-22: Type edge moved top -> left; name moved bottom -> top;
  *   type dot removed; ⋯ moved bottom-right, tinted in the type color.
  * - 2026-10-22: cursor-pointer on hover; type edge moved back left -> top.
+ * - 2026-10-22: Locked 3:4 aspect ratio (was min-height, so rack and binder
+ *   cards drifted to different ratios); heights now scale with width.
  */
