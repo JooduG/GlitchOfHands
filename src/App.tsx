@@ -801,7 +801,7 @@ export function App() {
         {/* click-outside closes the binder */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 z-[5]"
+            className="absolute inset-0 z-5"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -1119,7 +1119,7 @@ export function App() {
                     title="Stop generating"
                     aria-label="Stop"
                     onClick={stopGen}
-                    className="flex h-11 w-14 flex-none items-center justify-center bg-danger text-void font-bold"
+                    className="flex h-11 w-22 flex-none items-center justify-center bg-danger text-void font-bold"
                   >
                     ■
                   </button>
