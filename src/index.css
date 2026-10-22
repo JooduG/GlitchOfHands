@@ -1,5 +1,5 @@
-/* [GENERATED] src/index.css — DO NOT EDIT TOKENS DIRECTLY */
-/* Edit DESIGN.md and run npm run sync:css */
+/* [GENERATED] src/index.css — DO NOT EDIT DIRECTLY */
+/* Edit DESIGN.md and run npm run sync:css (it appends §5 + normalize fix) */
 @import "tailwindcss";
 
 @theme {
@@ -32,4 +32,68 @@
     font-family: "Inter", system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/* --- from DESIGN.md §5: Macro Layout & Platform Overrides --- */
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: linear-gradient(
+        120deg,
+        #0b101a 0%,
+        #14182b 40%,
+        #1e1b38 70%,
+        #16243b 100%
+      )
+      no-repeat fixed;
+    background-size: cover;
+    color: var(--color-frisk);
+    font-family: var(--font-base);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Layout enforcement against unlayered platform resets (e.g. Perchance iframe normalize.css) */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+  height: 100% !important;
+}
+
+.stage-feed-container {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.bottom-stage-footer {
+  flex: 0 0 auto !important;
+  margin-top: auto !important;
+  width: 100% !important;
 }

@@ -25,12 +25,21 @@
  *   node .agents/skills/design/scripts/sync-classes.js --check    # exit 1 if hardcoded remain (CI)
  *   node .agents/skills/design/scripts/sync-classes.js --path src/components  # limit scope
  *
+ * Normalize coverage (platform reset vs utilities — warn-only, never rewrites):
+ *   every text-, font-, uppercase- and display-class used on
+ *   section/main/button/input/textarea/select/h1 in src/ should have a
+ *   matching override in platform-normalize-fix.css (else the Perchance
+ *   wrapper's unlayered normalize.css eats it), and every override should
+ *   still match something in src/ (stale-rule purge, P3). Reported on every
+ *   run; --check does NOT fail on these (variant/responsive matching is fuzzy).
+ *
  * Wire-up (package.json):
  *   "sync:classes": "node .agents/skills/design/scripts/sync-classes.js",
  *   "lint:classes": "node .agents/skills/design/scripts/sync-classes.js --check",
  *   "sync": "npm run sync:ignores && npm run sync:css && npm run sync:classes"
  * Run sync:css BEFORE sync:classes so brand-new tokens exist before classes
- * are rewritten to use them.
+ * are rewritten to use them. sync:css owns index.css inclusion+order;
+ * this file owns coverage+freshness of the override set.
  */
 
 import fs from 'fs'
@@ -162,6 +171,116 @@ export function replaceClasses(text, maps) {
 const SCAN_EXTS = new Set(['.ts', '.tsx', '.js', '.jsx'])
 const SKIP_FILES = new Set(['src/index.css'])
 
+// Tags the platform normalize reset can bite (unlayered element selectors
+// beat layered Tailwind utilities), and which utility families lose on each.
+// Display utilities are only at risk on sectioning/media elements — form
+// elements never had their display reset. Colors/fonts only lose where the
+// reset sets color/font/margin (form elements) or font-size (h1).
+const DISPLAY_TAGS = new Set([
+  'section', 'main', 'article', 'aside', 'header', 'footer', 'nav', 'menu',
+  'figcaption', 'figure', 'details', 'hgroup',
+])
+const FORM_TAGS = new Set(['button', 'input', 'select', 'textarea', 'optgroup'])
+const FONT_WEIGHTS = new Set([
+  'thin', 'extralight', 'light', 'normal', 'medium', 'semibold', 'bold',
+  'extrabold', 'black',
+])
+const TEXT_SIZES = new Set([
+  'xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl',
+  '8xl', '9xl',
+])
+
+/** Base utility (after the last variant colon) → true when the platform reset eats it on this tag. */
+function needsOverride(tag, cls) {
+  // State variants have no unlayered competitor… except on form elements,
+  // where button{color:inherit;font:inherit} beats even :hover rules.
+  // Checking the full class keeps it simple: the override re-asserts the
+  // exact layered rule it mirrors.
+  const base = cls.includes(':') ? cls.slice(cls.lastIndexOf(':') + 1) : cls
+  if (DISPLAY_TAGS.has(tag)) return /^(block|flex|grid|inline-flex|table|contents)$/.test(base)
+  if (tag === 'h1') {
+    return TEXT_SIZES.has(base) || /^\[(\d+(\.\d+)?(px|rem|em|%))\]|^\[\d/.test(base) || /^m[trblxyse]?($|-)/.test(base)
+  }
+  if (tag === 'small') return TEXT_SIZES.has(base)
+  if (tag === 'b' || tag === 'strong') return base.startsWith('font-') && FONT_WEIGHTS.has(base.slice(5))
+  if (FORM_TAGS.has(tag)) {
+    if (base === 'uppercase' || base === 'lowercase' || base === 'capitalize') return true
+    if (base === 'italic' || base === 'not-italic') return true
+    if (base.startsWith('leading-')) return true
+    if (base.startsWith('cursor-')) return true
+    if (base === 'overflow-visible' || (tag === 'button' && base.startsWith('overflow-'))) return true
+    if (/^m[trblxyse]?($|-)/.test(base)) return true
+    if (base.startsWith('text-')) {
+      const v = base.slice(5)
+      if (TEXT_SIZES.has(v) || /^\[/.test(v)) return true // sizes arbitrary → font-size
+      if (/^(left|center|right|justify|start|end)$/.test(v)) return false // text-align: no reset competitor
+      return true // colors (incl. text-[#hex]) lose to color:inherit
+    }
+    if (base.startsWith('font-')) {
+      const v = base.slice(5)
+      if (FONT_WEIGHTS.has(v)) return true
+      if (/^(mono|sans|serif)$/.test(v) || /^\[/.test(v)) return true
+      return false
+    }
+    return false
+  }
+  if (tag === 'img') return base.startsWith('border')
+  if (tag === 'svg' || tag === 'hr' || tag === 'pre') return base.startsWith('overflow-')
+  if (tag === 'table') return base === 'border-collapse' || base === 'border-separate' || base.startsWith('border-spacing')
+  if (tag === 'td' || tag === 'th') return base.startsWith('p-') || base === 'p'
+  if (tag === 'a') return base.startsWith('bg-') || base.startsWith('outline')
+  if (tag === 'code' || tag === 'kbd' || tag === 'samp') return base.startsWith('font-')
+  if (tag === 'fieldset') return base.startsWith('border') || /^m[trblxyse]?($|-)/.test(base) || base.startsWith('p')
+  if (tag === 'figure') return /^m[trblxyse]?($|-)/.test(base)
+  return false
+}
+
+function escapeClass(cls) {
+  return cls.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1')
+}
+
+/**
+ * Warn-only coverage audit, no rewrites. Returns { missing, orphaned }.
+ * - missing: "tag.class" pairs used in src/ classNames with no matching
+ *   "tag.escaped-class" override in the normalize css.
+ * - orphaned: override selectors matching nothing in src/ (dead rules, P3).
+ */
+export function auditNormalizeCoverage(fileTexts, cssText) {
+  const used = new Set()
+  const tags = 'section|main|article|aside|header|footer|nav|menu|figcaption|figure|details|hgroup|audio|canvas|progress|video|button|input|textarea|select|optgroup|img|svg|table|td|th|h1|small|b|strong|a|hr|pre|code|kbd|samp|fieldset'
+  const classAttrRe = new RegExp(`<(${tags})\\b[^>]*className="([^"]+)"`, 'g')
+  for (const { text } of fileTexts) {
+    let m
+    classAttrRe.lastIndex = 0
+    while ((m = classAttrRe.exec(text))) {
+      const tag = m[1].toLowerCase()
+      for (const cls of m[2].split(/\s+/)) {
+        if (cls && needsOverride(tag, cls)) used.add(`${tag}.${cls}`)
+      }
+    }
+  }
+  const missing = [...used].filter((pair) => {
+    const dot = pair.indexOf('.')
+    const sel = pair.slice(0, dot) + '.' + escapeClass(pair.slice(dot + 1))
+    return !cssText.includes(sel + ' {') && !cssText.includes(sel + '{')
+  })
+  const orphaned = []
+  const selRe = /^([a-z0-9]+)\.([^\s{]+)\s*\{/gm
+  let s
+  selRe.lastIndex = 0
+  while ((s = selRe.exec(cssText))) {
+    const cls = s[2].replace(/\\(.)/g, '$1')
+    const found = fileTexts.some(({ text }) => text.includes(cls))
+    if (!found) orphaned.push(`${s[1]}.${s[2]}`)
+  }
+  return { missing, orphaned }
+}
+
+const NORMALIZE_CANDIDATES = [
+  'platform-normalize-fix.css',
+  'src/platform-normalize-fix.css',
+]
+
 function walk(dir, files) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name)
@@ -229,6 +348,30 @@ function main() {
     if (leftoverReport.length > 60) console.log(`    … +${leftoverReport.length - 60} more`)
   }
 
+  // Normalize coverage audit (warn-only): platform reset vs utilities.
+  const normPath = NORMALIZE_CANDIDATES.map((p) => path.join(rootDir, p)).find(
+    (p) => fs.existsSync(p),
+  )
+  if (!normPath) {
+    console.log('[sync-classes] Normalize coverage: SKIPPED (platform-normalize-fix.css not found)')
+  } else {
+    const cssText = fs.readFileSync(normPath, 'utf8')
+    const fileTexts = files.map((full) => ({ text: fs.readFileSync(full, 'utf8') }))
+    const { missing, orphaned } = auditNormalizeCoverage(fileTexts, cssText)
+    if (!missing.length && !orphaned.length) {
+      console.log('[sync-classes] Normalize coverage: OK')
+    } else {
+      for (const m of missing.slice(0, 40)) {
+        console.log(`[sync-classes] Normalize coverage: MISSING override for \`${m}\` — add it to ${path.relative(rootDir, normPath)}`)
+      }
+      if (missing.length > 40) console.log(`[sync-classes] … +${missing.length - 40} more missing`)
+      for (const o of orphaned.slice(0, 20)) {
+        console.log(`[sync-classes] Normalize coverage: ORPHANED override \`${o}\` matches nothing in src/ — prune it (P3)`)
+      }
+      if (orphaned.length > 20) console.log(`[sync-classes] … +${orphaned.length - 20} more orphaned`)
+    }
+  }
+
   if (check && (total > 0 || leftoverReport.length > 0)) {
     console.error('[sync-classes] Hardcoded color values remain. Run sync:classes, then re-check.')
     process.exit(1)
@@ -242,4 +385,5 @@ if (invokedAsScript) main()
 /**
  * CHANGELOG:
  * - 2026-10-21: Created — DESIGN.md-driven hardcoded-class hunter (hex, 8-digit hex, whole-value rgba; dry-run/check/scope flags).
+ * - 2026-10-22: Added warn-only platform-normalize coverage audit (missing + orphaned overrides).
  */
