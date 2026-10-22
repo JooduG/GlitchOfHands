@@ -966,8 +966,12 @@ export function App() {
               </button>
             )}
 
-            {/* Bottom control bar: binder toggle | composer | status */}
-            <div className="mt-2 flex items-center gap-2">
+            {/* Bottom control bar: binder toggle | composer | status.
+                Capped+centered like the feed column so the whole strip shares
+                the feed's centering context (the pill alone can't center: it
+                lives inside the form, squeezed asymmetrically by the 44px
+                burger left and the ~176px status chip right). */}
+            <div className="mx-auto mt-2 flex w-full max-w-3xl items-center gap-2">
               <button
                 type="button"
                 title="Toggle Card Binder"
