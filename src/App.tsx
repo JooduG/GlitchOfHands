@@ -166,21 +166,16 @@ export function App() {
     }
   });
   const [typeFilter, setTypeFilter] = useState<"all" | CardType>("all");
-  // Bottom-bar "wide" variants. Each branch is a whole literal string: Tailwind
-  // scans source text, so an interpolated breakpoint (e.g. `${x}:block`)
-  // would silently vanish from the production build.
-  const wideBar = sidebarOpen
-    ? "2xl:block 2xl:mx-0 2xl:max-w-none"
-    : "min-[1128px]:block min-[1128px]:mx-0 min-[1128px]:max-w-none";
-  const wideBurger = sidebarOpen
-    ? "2xl:absolute 2xl:bottom-0 2xl:left-0"
-    : "min-[1128px]:absolute min-[1128px]:bottom-0 min-[1128px]:left-0";
-  const wideForm = sidebarOpen
-    ? "2xl:mx-auto 2xl:max-w-3xl"
-    : "min-[1128px]:mx-auto min-[1128px]:max-w-3xl";
-  const wideStatus = sidebarOpen
-    ? "2xl:absolute 2xl:bottom-0 2xl:right-0"
-    : "min-[1128px]:absolute min-[1128px]:bottom-0 min-[1128px]:right-0";
+  // Bottom-bar "wide" variants: the section is a @container, so corner mode
+  // engages exactly when the content-box fits the 768px column plus both
+  // chrome widths plus breathing room (measured status ~189px -> threshold
+  // 1200px), with no binder special-casing. Each string stays a whole
+  // literal: Tailwind scans source text, so interpolated breakpoints would
+  // silently vanish from the production build.
+  const wideBar = "@min-[1200px]:block @min-[1200px]:mx-0 @min-[1200px]:max-w-none";
+  const wideBurger = "@min-[1200px]:absolute @min-[1200px]:bottom-0 @min-[1200px]:left-0";
+  const wideForm = "@min-[1200px]:mx-auto @min-[1200px]:max-w-3xl";
+  const wideStatus = "@min-[1200px]:absolute @min-[1200px]:bottom-0 @min-[1200px]:right-0";
   const [search, setSearch] = useState("");
   const [inspected, setInspected] = useState<Card | null>(null);
   const [draft, setDraft] = useState<EditorDraft>(CLOSED_DRAFT);
@@ -918,7 +913,7 @@ export function App() {
           </section>
 
           {/* Feed */}
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 md:p-3 relative">
+          <section className="@container flex min-h-0 flex-1 flex-col overflow-hidden p-2 md:p-3 relative">
             <div
               ref={listRef}
               onScroll={() => {
@@ -982,13 +977,13 @@ export function App() {
             )}
 
             {/* Bottom control bar. Narrow: one centered strip capped like the
-                feed column (burger | composer | status in a row). Wide: the
-                burger pins to the bottom-left corner, the status chip to the
-                bottom-right, and the form alone takes the centered feed-width
-                slot — so the input pill is exactly as wide as the feed.
-                "Wide" depends on the binder (open steals 384px): binder open
-                -> 2xl, binder closed -> 1128px. Either way the section holds
-                768px of column plus both chrome widths plus breathing room. */}
+                feed column (burger | composer | status in a row; the status
+                shows full text from sm up, truncated only on phones). Wide
+                (section fits 768px + chrome, via @container): the burger
+                pins to the bottom-left corner, the full-text status chip to
+                the bottom-right, and the form alone takes the centered
+                feed-width slot — so the input pill is exactly as wide as
+                the feed. */}
             <div
               className={`relative mt-2 flex items-center gap-2 mx-auto w-full max-w-3xl ${wideBar}`}
             >
@@ -1173,7 +1168,7 @@ export function App() {
               </form>
               <span
                 title={statusTitle}
-                className={`flex h-11 max-w-28 flex-none items-center truncate rounded-lg border border-gunmetal bg-chalk px-2.5 font-mono text-[11px] text-frisk tabular-nums sm:max-w-40 ${wideStatus}`}
+                className={`flex h-11 max-w-28 flex-none items-center truncate rounded-lg border border-gunmetal bg-chalk px-2.5 font-mono text-[11px] text-frisk tabular-nums sm:max-w-none ${wideStatus}`}
               >
                 {busyMsg || statusText}
               </span>
