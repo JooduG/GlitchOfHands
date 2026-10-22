@@ -107,8 +107,12 @@ if (normPath) {
   console.log(`✓ Inlined ${path.relative(rootDir, normPath)} last`);
 } else {
   console.warn(
-    "[sync-css] WARNING: platform-normalize-fix.css not found — button/section utilities will lose to the platform reset.",
+    "[sync-css] WARNING: platform-normalize-fix.css not found — emitting minimal fallback so .flex survives the platform reset.",
   );
+  extra +=
+    "\n/* --- fallback: display enforcement (platform-normalize-fix.css missing) --- */\n" +
+    "section.flex, header.flex, aside.flex, main.flex, footer.flex, nav.flex { display: flex !important; }\n" +
+    "section.flex { flex-direction: column !important; min-height: 0 !important; }\n";
 }
 
 fs.writeFileSync(indexCssPath, cssLines.join("\n") + extra, "utf8");
@@ -119,4 +123,8 @@ console.log("✓ Compiled DESIGN.md tokens into src/index.css");
  * - 2026-10-21: Initial creation of sync-css.js compiling DESIGN.md into Tailwind @theme.
  * - 2026-10-22: Also appends DESIGN.md §5 override block (extracted live) and inlines
  *   platform-normalize-fix.css last; missing sources warn instead of fail.
+ * - 2026-10-22 (later): when platform-normalize-fix.css is missing, emit a
+ *   minimal fallback (section/header/aside/main/footer/nav .flex) — HEAD
+ *   deleted the fix file and the feed section fell back to display:block,
+ *   pushing the composer + settings menu below the fold.
  */

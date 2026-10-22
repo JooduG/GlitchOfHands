@@ -16,6 +16,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import type { Card, CardType, CardTypeField } from "./types/card.ts";
 import { CARD_TYPE_REGISTRY } from "./types/card.ts";
@@ -169,6 +170,8 @@ export function App() {
   const [inspected, setInspected] = useState<Card | null>(null);
   const [draft, setDraft] = useState<EditorDraft>(CLOSED_DRAFT);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuBtnRef = useRef<HTMLButtonElement | null>(null);
+  const [menuPos, setMenuPos] = useState<{ left: number; bottom: number; maxH: number } | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [busyMsg, setBusyMsg] = useState<string | null>(null);
   const [live, setLive] = useState<{ name: string; text: string } | null>(null);
@@ -1033,15 +1036,35 @@ export function App() {
                     type="button"
                     title="Story Options"
                     aria-label="Story Options"
-                    onClick={() => setMenuOpen((v) => !v)}
+                    ref={menuBtnRef}
+                    onClick={() => {
+                      if (!menuOpen && menuBtnRef.current) {
+                        const r = menuBtnRef.current.getBoundingClientRect();
+                        setMenuPos({
+                          left: Math.max(8, Math.min(r.left, window.innerWidth - 232)),
+                          bottom: Math.max(8, window.innerHeight - r.top + 8),
+                          maxH: Math.max(160, r.top - 16),
+                        });
+                      }
+                      setMenuOpen((v) => !v);
+                    }}
                     className="flex h-11 w-11 items-center justify-center text-muted hover:text-frisk border-r border-gunmetal/60"
                   >
                     ⚙
                   </button>
-                  {menuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-                      <div className="absolute bottom-12 left-0 z-40 w-56 rounded-xl border border-gunmetal bg-chalk p-1.5 shadow-2xl">
+                  {menuOpen &&
+                    createPortal(
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+                        <div
+                          className="fixed z-40 w-56 rounded-xl border border-gunmetal bg-chalk p-1.5 shadow-2xl"
+                          style={{
+                            left: menuPos?.left ?? 8,
+                            bottom: menuPos?.bottom ?? 8,
+                            maxHeight: menuPos?.maxH ?? 400,
+                            overflowY: "auto",
+                          }}
+                        >
                         <MenuLabel>Story</MenuLabel>
                         <MenuItem onClick={regen} disabled={!!generating.current || !hand.length}>
                           Regenerate last reply
@@ -1118,9 +1141,10 @@ export function App() {
                         >
                           Restore starters
                         </MenuItem>
-                      </div>
-                    </>
-                  )}
+                        </div>
+                      </>,
+                      document.body
+                    )}
                 </div>
                 <textarea
                   ref={inputRef}

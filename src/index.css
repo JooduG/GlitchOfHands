@@ -97,3 +97,7 @@ main {
   margin-top: auto !important;
   width: 100% !important;
 }
+
+/* --- fallback: display enforcement (platform-normalize-fix.css missing) --- */
+section.flex, header.flex, aside.flex, main.flex, footer.flex, nav.flex { display: flex !important; }
+section.flex { flex-direction: column !important; min-height: 0 !important; }
