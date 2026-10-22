@@ -804,34 +804,6 @@ export function App() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-void/90 text-frisk overflow-hidden">
-      {/* Top header */}
-      <header className="flex h-14 flex-none items-center justify-between border-b border-gunmetal/60 px-4 md:px-6 backdrop-blur z-20 bg-void/40">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            title="Toggle Card Binder"
-            aria-label="Toggle Card Binder"
-            onClick={() => setSidebarOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gunmetal bg-chalk text-frisk hover:bg-gunmetal transition-colors"
-          >
-            ☰
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-cyan shadow-[0_0_12px_rgba(17,174,204,0.6)]" />
-            <h1 className="text-base md:text-lg font-bold tracking-tight text-frisk">
-              GlitchOfHands
-            </h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {hasDirector(S()) && (
-            <span className="rounded bg-chalk px-2.5 py-1 text-xs font-mono text-cyan border border-cyan/30">
-              🎬 Director staging
-            </span>
-          )}
-        </div>
-      </header>
-
       <div className="flex flex-1 overflow-hidden relative">
         {/* click-outside closes the binder */}
         {sidebarOpen && (
@@ -1008,28 +980,32 @@ export function App() {
                   setJumpVisible(false);
                   inputRef.current?.focus();
                 }}
-                className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-cyan/50 bg-void/90 px-4 py-1 font-mono text-xs text-cyan"
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-cyan/50 bg-void/90 px-4 py-1 font-mono text-xs text-cyan"
                 aria-label="Jump to latest"
               >
                 ↓ Latest
               </button>
             )}
 
-            {/* Composer */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                send();
-              }}
-              className="mx-auto mt-3 flex w-full max-w-3xl items-center gap-2"
-            >
-              <span
-                title={statusTitle}
-                className="hidden md:block max-w-50 truncate font-mono text-[11px] text-muted tabular-nums"
+            {/* Bottom control bar: binder toggle | composer | status */}
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                title="Toggle Card Binder"
+                aria-label="Toggle Card Binder"
+                onClick={() => setSidebarOpen((v) => !v)}
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-gunmetal bg-chalk text-frisk hover:bg-gunmetal transition-colors"
               >
-                {busyMsg || statusText}
-              </span>
-              <div className="flex flex-1 items-center gap-0 rounded-xl border border-gunmetal bg-void/60 focus-within:border-cyan transition-colors overflow-hidden">
+                ☰
+              </button>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  send();
+                }}
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
+              <div className="mx-auto flex w-full max-w-3xl flex-1 items-center gap-0 rounded-xl border border-gunmetal bg-void/60 focus-within:border-cyan transition-colors overflow-hidden">
                 <div className="relative flex-none">
                   <button
                     type="button"
@@ -1191,9 +1167,13 @@ export function App() {
                   </>
                 )}
               </div>
-            </form>
-            <div className="mx-auto mt-1 w-full max-w-3xl font-mono text-[10px] text-frozen md:hidden truncate tabular-nums">
-              {busyMsg || statusText}
+              </form>
+              <span
+                title={statusTitle}
+                className="max-w-28 flex-none truncate font-mono text-[11px] text-muted tabular-nums sm:max-w-44"
+              >
+                {busyMsg || statusText}
+              </span>
             </div>
           </section>
         </main>
