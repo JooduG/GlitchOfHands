@@ -12,7 +12,7 @@ import { CARD_TYPE_REGISTRY } from "../../types/card.ts";
 
 interface BoardSlotProps {
   card: Card;
-  onRemove: (id: string) => void;
+  onToggle: (id: string) => void;
   onInspect: (card: Card) => void;
 }
 
@@ -20,7 +20,7 @@ function initialOf(name?: string): string {
   return String((name || "?").trim().charAt(0) || "?").toUpperCase();
 }
 
-export function BoardSlot({ card, onRemove, onInspect }: BoardSlotProps) {
+export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
   const meta = CARD_TYPE_REGISTRY[card.type];
   const typeEdgeColor = meta?.color || "#11aecc";
 
@@ -28,12 +28,12 @@ export function BoardSlot({ card, onRemove, onInspect }: BoardSlotProps) {
     <div
       role="button"
       tabIndex={0}
-      title={`${card.name} (${meta?.label || card.type}) — click to inspect`}
-      onClick={() => onInspect(card)}
+      title={`${card.name} (${meta?.label || card.type}) — click to return to binder`}
+      onClick={() => onToggle(card.id)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onInspect(card);
+          onToggle(card.id);
         }
       }}
       className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-cyan/60 transition-all text-left"
@@ -63,18 +63,6 @@ export function BoardSlot({ card, onRemove, onInspect }: BoardSlotProps) {
           >
             ⋯
           </button>
-          <button
-            type="button"
-            title="Remove from board"
-            aria-label={`Remove ${card.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(card.id);
-            }}
-            className="w-5 h-5 rounded text-muted hover:text-danger hover:bg-danger/20 flex items-center justify-center text-[10px] transition-colors"
-          >
-            ✕
-          </button>
         </div>
       </div>
 
@@ -103,5 +91,6 @@ export function BoardSlot({ card, onRemove, onInspect }: BoardSlotProps) {
  * - 2026-10-21: Converted BoardSlot & EmptySlot to pure TSX with rotation badges & ⋯ menu.
  * - 2026-10-22: Dropped truncating type pill (edge + dot carry type); per-type
  *   avatar wash; body click inspects (role=button is honest now); removed dead
- *   EmptySlot export; removed speaker-order badge + order prop.
+ *   EmptySlot export; removed speaker-order badge + order prop; ✕ removed —
+ *   body click returns the card to the binder (mirrors binder toggle).
  */

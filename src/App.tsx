@@ -900,7 +900,7 @@ export function App() {
                 <BoardSlot
                   key={card.id}
                   card={card}
-                  onRemove={(id) => void toggleTable(id)}
+                  onToggle={(id) => void toggleTable(id)}
                   onInspect={(c) => setInspected(c)}
                 />
               ))}
