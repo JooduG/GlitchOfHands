@@ -83,7 +83,7 @@ npm run sync:css      # Compiles DESIGN.md YAML frontmatter into src/index.css
 Import from another generator (remove the spaces around `import` — they are only
 there so this README itself is not treated as using the import):
 
-```text
+```
 chatPlugin = { import : YOUR-GENERATOR-NAME }
 ```
 
@@ -124,7 +124,7 @@ Then use `root.chatPlugin.*`:
 
 Streaming with a deck (recommended for UI):
 
-```js
+```
 let c = root.chatPlugin.getStarterCardById("Chloe");
 let equipped = [root.chatPlugin.getStarterCardById("Riverside")];
 let p = root.chatPlugin.buildDeckPrompt(c, equipped, [{role:"user", content:"hi"}], "", "");

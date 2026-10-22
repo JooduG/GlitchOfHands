@@ -1023,7 +1023,7 @@ export function App() {
                       }
                       setMenuOpen((v) => !v);
                     }}
-                    className="flex h-11 w-11 items-center justify-center text-muted hover:text-frisk border-r border-gunmetal/60"
+                    className="flex h-11 w-11 items-center justify-center bg-chalk text-frisk hover:brightness-110 border-r border-gunmetal"
                   >
                     ⚙
                   </button>
@@ -1152,7 +1152,7 @@ export function App() {
                       aria-label="Skip my turn — next character speaks"
                       onClick={() => void generateTurn(null)}
                       disabled={!chars.length}
-                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-void text-lg font-bold hover:brightness-110 disabled:opacity-30 border-l border-void/30"
+                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-void text-lg font-bold hover:brightness-110 border-l border-void/30"
                     >
                       »
                     </button>
@@ -1170,7 +1170,7 @@ export function App() {
               </form>
               <span
                 title={statusTitle}
-                className="max-w-28 flex-none truncate font-mono text-[11px] text-muted tabular-nums sm:max-w-44"
+                className="max-w-28 flex-none truncate rounded-lg border border-gunmetal bg-chalk px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums sm:max-w-44"
               >
                 {busyMsg || statusText}
               </span>

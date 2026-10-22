@@ -120,13 +120,13 @@ A holistic design system for **GlitchOfHands**: one vision, one token set, one m
 | `--amber`    | `#fbbf24` | chaos/warning, director                      |
 | `--blue`     | `#3b82f6` | info, scenario                               |
 | `--purple`   | `#a855f7` | style accents                                |
-| `--orange`   | `#f97316` | warning buttons (reserved)                   |
-| `--rose`     | `#fb7185` | error text on red washes                     |
-| `--indigo`   | `#818cf8` | reserved                                     |
-| `--violet`   | `#c084fc` | reserved                                     |
-| `--teal`     | `#14b8a6` | reserved                                     |
-| `--lime`     | `#84cc16` | reserved                                     |
-| `--yellow`   | `#fde047` | reserved                                     |
+| `--orange`  | `#f97316` | warning buttons (reserved) |
+| `--rose`    | `#fb7185` | error text on red washes   |
+| `--indigo`  | `#818cf8` | reserved                   |
+| `--violet`  | `#c084fc` | reserved                   |
+| `--teal`    | `#14b8a6` | reserved                   |
+| `--lime`    | `#84cc16` | reserved                   |
+| `--yellow`  | `#fde047` | reserved                   |
 | `--primary`  | `#11aecc` | alias of cyan: primary action color          |
 
 Background: 4-stop void gradient, `120deg`, fixed: `#0b101a → #14182b → #1e1b38 → #16243b`. Dark-only.
@@ -239,104 +239,37 @@ main {
  * elements. They MUST stay unlayered (no @layer) and be appended LAST.
  * Coverage is audited by sync-classes.js (`missing` = add here, `orphaned` =
  * prune here, P3). */
-header.flex {
-  display: flex;
-}
-button.text-frisk {
-  color: var(--color-frisk);
-}
-h1.text-base {
-  font-size: var(--text-base);
-}
+header.flex { display: flex; }
+button.text-frisk { color: var(--color-frisk); }
+h1.text-base { font-size: var(--text-base); }
 @media (width>=48rem) {
-  h1.md\:text-lg {
-    font-size: var(--text-lg);
-    line-height: var(--tw-leading, var(--text-lg--line-height));
-  }
+  h1.md\:text-lg { font-size: var(--text-lg); line-height: var(--tw-leading, var(--text-lg--line-height)); }
 }
-h1.font-bold {
-  font-weight: var(--font-weight-bold);
-}
-aside.flex {
-  display: flex;
-}
-input.text-xs {
-  font-size: var(--text-xs);
-  line-height: var(--tw-leading, var(--text-xs--line-height));
-}
-input.text-frisk {
-  color: var(--color-frisk);
-}
-button.font-mono {
-  font-family: var(--font-mono);
-}
-button.text-\[10px\] {
-  font-size: 10px;
-}
-button.uppercase {
-  text-transform: uppercase;
-}
-button.text-void {
-  color: var(--color-void);
-}
-button.text-cyan {
-  color: var(--color-cyan);
-}
-button.text-frozen {
-  color: var(--color-frozen);
-}
-button.font-bold {
-  font-weight: var(--font-weight-bold);
-}
-button.text-muted {
-  color: var(--color-muted);
-}
-button.text-frozen {
-  color: var(--color-frozen);
-}
-button.text-xs {
-  font-size: var(--text-xs);
-  line-height: var(--tw-leading, var(--text-xs--line-height));
-}
-button.text-sm {
-  font-size: var(--text-sm);
-  line-height: var(--tw-leading, var(--text-sm--line-height));
-}
-main.flex {
-  display: flex;
-}
-section.flex {
-  display: flex;
-}
-section.flex {
-  flex-direction: column;
-  min-height: 0;
-}
-textarea.text-sm {
-  font-size: var(--text-sm);
-  line-height: var(--tw-leading, var(--text-sm--line-height));
-}
-textarea.text-frisk {
-  color: var(--color-frisk);
-}
-button.hover\:text-frisk:hover {
-  color: var(--color-frisk);
-}
-button.hover\:text-danger:hover {
-  color: var(--color-danger);
-}
-button.font-black {
-  --tw-font-weight: var(--font-weight-black);
-  font-weight: var(--font-weight-black);
-}
-button.font-medium {
-  --tw-font-weight: var(--font-weight-medium);
-  font-weight: var(--font-weight-medium);
-}
-button.text-lg {
-  font-size: var(--text-lg);
-  line-height: var(--tw-leading, var(--text-lg--line-height));
-}
+h1.font-bold { font-weight: var(--font-weight-bold); }
+aside.flex { display: flex; }
+input.text-xs { font-size: var(--text-xs); line-height: var(--tw-leading, var(--text-xs--line-height)); }
+input.text-frisk { color: var(--color-frisk); }
+button.font-mono { font-family: var(--font-mono); }
+button.text-\[10px\] { font-size: 10px; }
+button.uppercase { text-transform: uppercase; }
+button.text-void { color: var(--color-void); }
+button.text-cyan { color: var(--color-cyan); }
+button.text-frozen { color: var(--color-frozen); }
+button.font-bold { font-weight: var(--font-weight-bold); }
+button.text-muted { color: var(--color-muted); }
+button.text-frozen { color: var(--color-frozen); }
+button.text-xs { font-size: var(--text-xs); line-height: var(--tw-leading, var(--text-xs--line-height)); }
+button.text-sm { font-size: var(--text-sm); line-height: var(--tw-leading, var(--text-sm--line-height)); }
+main.flex { display: flex; }
+section.flex { display: flex; }
+section.flex { flex-direction: column; min-height: 0; }
+textarea.text-sm { font-size: var(--text-sm); line-height: var(--tw-leading, var(--text-sm--line-height)); }
+textarea.text-frisk { color: var(--color-frisk); }
+button.hover\:text-frisk:hover { color: var(--color-frisk); }
+button.hover\:text-danger:hover { color: var(--color-danger); }
+button.font-black { --tw-font-weight: var(--font-weight-black); font-weight: var(--font-weight-black); }
+button.font-medium { --tw-font-weight: var(--font-weight-medium); font-weight: var(--font-weight-medium); }
+button.text-lg { font-size: var(--text-lg); line-height: var(--tw-leading, var(--text-lg--line-height)); }
 ```
 
 ## 6. Components
@@ -440,6 +373,6 @@ Adopt next: eyebrow budget, signature colors, Satisfy moment.
 - `imageglitch` (workspace `scratch/generators/imageglitch/`): the taste —
   tokens, fonts, radii, physics, button/menu/overlay patterns, playful voice.
 - `rpglitch` (workspace `scratch/rpglitch-src/`, from
-  `https://github.com/JooduG/RPGlitch`): the governance — token pipeline and
+  https://github.com/JooduG/RPGlitch): the governance — token pipeline and
   4-tier architecture, glass elevations, grounded motion law, bits-ui
   headless patterns, motion standards, anti-slop taste doc, clinical voice.
