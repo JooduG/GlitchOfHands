@@ -941,7 +941,7 @@ export function App() {
                 <div className="flex justify-start">
                   <div className="max-w-[78%]">
                     {live.name && (
-                      <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-cyan">
+                      <div className="mb-1 text-left font-mono text-[11px] uppercase tracking-wider text-cyan">
                         {live.name}
                       </div>
                     )}
