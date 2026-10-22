@@ -1021,7 +1021,7 @@ export function App() {
                 e.preventDefault();
                 send();
               }}
-              className="mt-3 flex items-center gap-2"
+              className="mx-auto mt-3 flex w-full max-w-3xl items-center gap-2"
             >
               <span
                 title={statusTitle}
@@ -1192,7 +1192,7 @@ export function App() {
                 )}
               </div>
             </form>
-            <div className="mt-1 font-mono text-[10px] text-frozen md:hidden tabular-nums truncate">
+            <div className="mx-auto mt-1 w-full max-w-3xl font-mono text-[10px] text-frozen md:hidden truncate tabular-nums">
               {busyMsg || statusText}
             </div>
           </section>
@@ -1566,7 +1566,7 @@ function FeedBubble(props: { msg: Msg; onDelete: () => void }) {
     <div className={`group flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`flex max-w-[78%] flex-col ${isUser ? "items-end" : ""}`}>
         {!isUser && msg.authorName && (
-          <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-cyan">
+          <div className="mb-1 text-left font-mono text-[11px] uppercase tracking-wider text-cyan">
             {msg.authorName}
           </div>
         )}
@@ -1579,7 +1579,7 @@ function FeedBubble(props: { msg: Msg; onDelete: () => void }) {
           </details>
         )}
         <div
-          className={`px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+          className={`px-4 py-2.5 text-left text-sm leading-relaxed whitespace-pre-wrap ${
             isUser
               ? "rounded-2xl rounded-br-md bg-cyan text-void"
               : "rounded-2xl rounded-tl-md border border-gunmetal/60 bg-chalk text-frisk"
