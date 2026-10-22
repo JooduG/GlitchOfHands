@@ -945,7 +945,7 @@ export function App() {
                         {live.name}
                       </div>
                     )}
-                    <div className="rounded-2xl rounded-tl-md border border-gunmetal/60 bg-chalk px-4 py-2.5 text-sm text-frisk">
+                    <div className="rounded-2xl rounded-tl-md border border-gunmetal/60 bg-chalk px-4 py-2.5 text-left text-sm text-frisk">
                       {live.text || (
                         <span className="inline-flex gap-1 py-1">
                           <i className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce" />
