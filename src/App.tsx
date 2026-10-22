@@ -888,7 +888,7 @@ export function App() {
 
         {/* Stage */}
         <main className="flex flex-1 flex-col overflow-hidden">
-          <section className="flex-none border-b border-gunmetal/60 bg-void/60 p-4 backdrop-blur">
+          <section className="flex-none border-b border-gunmetal/60 bg-void/60 p-2 md:p-3 backdrop-blur">
             <div className="flex items-center gap-3 overflow-x-auto pb-2">
               {hand.map((card) => (
                 <BoardSlot
@@ -903,7 +903,7 @@ export function App() {
           </section>
 
           {/* Feed */}
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 md:p-6 relative">
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 md:p-3 relative">
             <div
               ref={listRef}
               onScroll={() => {
@@ -967,7 +967,7 @@ export function App() {
             )}
 
             {/* Bottom control bar: binder toggle | composer | status */}
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2">
               <button
                 type="button"
                 title="Toggle Card Binder"
@@ -1131,7 +1131,7 @@ export function App() {
                       aria-label="Skip my turn — next character speaks"
                       onClick={() => void generateTurn(null)}
                       disabled={!chars.length}
-                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-white text-lg font-bold hover:brightness-110 border-l border-void/30"
+                      className="flex h-11 w-11 flex-none items-center justify-center bg-emerald text-white text-lg font-bold hover:brightness-110 border-l border-void/30"
                     >
                       »
                     </button>
@@ -1139,7 +1139,7 @@ export function App() {
                       type="submit"
                       title="Send"
                       aria-label="Send"
-                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-white text-lg font-bold"
+                      className="flex h-11 w-11 flex-none items-center justify-center bg-emerald text-white text-lg font-bold"
                     >
                       ›
                     </button>
@@ -1149,7 +1149,7 @@ export function App() {
               </form>
               <span
                 title={statusTitle}
-                className="max-w-28 flex-none truncate rounded-lg border border-gunmetal bg-chalk px-2.5 py-1 font-mono text-[11px] text-frisk tabular-nums sm:max-w-44"
+                className="flex h-11 max-w-28 flex-none items-center truncate rounded-lg border border-gunmetal bg-chalk px-2.5 font-mono text-[11px] text-frisk tabular-nums sm:max-w-44"
               >
                 {busyMsg || statusText}
               </span>
