@@ -29,15 +29,27 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
     <div
       role="button"
       tabIndex={0}
-      title={`${card.name} (${meta?.label || card.type}) — click ⋯ to inspect`}
+      title={`${card.name} (${meta?.label || card.type}) — click to inspect`}
+      onClick={() => onInspect(card)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onInspect(card);
+        }
+      }}
       className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-cyan/60 transition-all text-left"
       style={{ borderTop: `3px solid ${typeEdgeColor}` }}
     >
-      {/* Top Bar: Type Pill & Quick Actions */}
+      {/* Top Bar: Type Dot & Quick Actions (the 3px top edge carries the
+          type color; a text pill can't fit 128px without truncating to
+          gibberish, so the dot + title carry the label accessibly) */}
       <div className="flex items-center justify-between gap-1 w-full">
-        <span className="font-mono text-[9px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-void/70 text-muted truncate flex-1">
-          {meta?.label || card.type}
-        </span>
+        <span
+          title={meta?.label || card.type}
+          aria-hidden="true"
+          className="w-2 h-2 rounded-full flex-none ml-0.5"
+          style={{ backgroundColor: typeEdgeColor }}
+        />
 
         <div className="flex items-center gap-0.5 flex-none">
           <button
@@ -67,8 +79,11 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
         </div>
       </div>
 
-      {/* Middle Portrait / Avatar */}
-      <div className="my-1.5 h-14 w-full rounded-lg bg-cyan/8 border border-frisk/5 flex items-center justify-center font-ubuntu font-bold text-2xl text-frisk overflow-hidden">
+      {/* Middle Portrait / Avatar (washed in the card's type color) */}
+      <div
+        className="my-1.5 h-14 w-full rounded-lg border border-frisk/5 flex items-center justify-center font-ubuntu font-bold text-2xl text-frisk overflow-hidden"
+        style={{ backgroundColor: `${typeEdgeColor}14` }}
+      >
         {card.image ? (
           <img src={card.image} alt={card.name} className="w-full h-full object-cover" />
         ) : (
@@ -93,15 +108,10 @@ export function BoardSlot({ card, order, onRemove, onInspect }: BoardSlotProps) 
   );
 }
 
-export function EmptySlot({ text = "+ Card" }: { text?: string }) {
-  return (
-    <div className="flex-none w-32 min-h-41 border border-dashed border-frozen/50 rounded-xl flex items-center justify-center font-mono text-[11px] tracking-[0.08em] uppercase text-frozen p-3 text-center select-none">
-      {text}
-    </div>
-  );
-}
-
 /**
  * CHANGELOG:
  * - 2026-10-21: Converted BoardSlot & EmptySlot to pure TSX with rotation badges & ⋯ menu.
+ * - 2026-10-22: Dropped truncating type pill (edge + dot carry type); per-type
+ *   avatar wash; body click inspects (role=button is honest now); removed dead
+ *   EmptySlot export.
  */

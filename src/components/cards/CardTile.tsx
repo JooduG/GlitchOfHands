@@ -19,6 +19,13 @@ interface CardTileProps {
   onInspect: (card: Card) => void;
 }
 
+function clip(s: string, n: number): string {
+  if (s.length <= n) return s;
+  const cut = s.slice(0, n);
+  const sp = cut.lastIndexOf(" ");
+  return (sp > 20 ? cut.slice(0, sp) : cut).trimEnd() + "…";
+}
+
 export function CardTile({
   card,
   selected,
@@ -27,8 +34,7 @@ export function CardTile({
   onToggle,
   onInspect,
 }: CardTileProps) {
-  const displayTagline =
-    tagline || card.definition.slice(0, 60) + (card.definition.length > 60 ? "..." : "");
+  const displayTagline = tagline || clip(card.definition, 60);
 
   return (
     <div
