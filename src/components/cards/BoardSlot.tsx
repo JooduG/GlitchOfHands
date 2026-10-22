@@ -3,8 +3,7 @@
  * 🎴 BOARD TABLE SLOT COMPONENT
  *
  * Renders one equipped card on the Board Table rack.
- * Features 3px type edge, initial/portrait avatar, speaker rotation order badge,
- * remove button, and discrete ⋯ menu button for inspection.
+ * Features 3px left type edge, initial/portrait avatar, inspect button.
  */
 
 import type { Card } from "../../types/card.ts";
@@ -36,34 +35,12 @@ export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
           onToggle(card.id);
         }
       }}
-      className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-cyan/60 transition-all text-left"
-      style={{ borderTop: `3px solid ${typeEdgeColor}` }}
+      className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-frisk/25 transition-all text-left"
+      style={{ borderLeft: `3px solid ${typeEdgeColor}` }}
     >
-      {/* Top Bar: Type Dot & Quick Actions (the 3px top edge carries the
-          type color; a text pill can't fit 128px without truncating to
-          gibberish, so the dot + title carry the label accessibly) */}
-      <div className="flex items-center justify-between gap-1 w-full">
-        <span
-          title={meta?.label || card.type}
-          aria-hidden="true"
-          className="w-2 h-2 rounded-full flex-none ml-0.5"
-          style={{ backgroundColor: typeEdgeColor }}
-        />
-
-        <div className="flex items-center gap-0.5 flex-none">
-          <button
-            type="button"
-            title="Inspect"
-            aria-label={`Inspect ${card.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onInspect(card);
-            }}
-            className="w-5 h-5 rounded text-muted hover:text-frisk hover:bg-gunmetal flex items-center justify-center font-mono text-xs transition-colors"
-          >
-            ⋯
-          </button>
-        </div>
+      {/* Top: Name (type lives on the left edge) */}
+      <div className="flex items-center gap-1 w-full">
+        <span className="text-xs font-semibold text-frisk truncate flex-1">{card.name}</span>
       </div>
 
       {/* Middle Portrait / Avatar (washed in the card's type color) */}
@@ -78,9 +55,21 @@ export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
         )}
       </div>
 
-      {/* Bottom Row: Name */}
-      <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-semibold text-frisk truncate flex-1">{card.name}</span>
+      {/* Bottom Right: Inspect, tinted in the card's type color */}
+      <div className="flex items-center justify-end gap-1.5">
+        <button
+          type="button"
+          title="Inspect"
+          aria-label={`Inspect ${card.name}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onInspect(card);
+          }}
+          style={{ color: typeEdgeColor }}
+          className="w-5 h-5 rounded hover:bg-gunmetal hover:brightness-125 flex items-center justify-center font-mono text-xs transition-colors"
+        >
+          ⋯
+        </button>
       </div>
     </div>
   );
@@ -93,4 +82,6 @@ export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
  *   avatar wash; body click inspects (role=button is honest now); removed dead
  *   EmptySlot export; removed speaker-order badge + order prop; ✕ removed —
  *   body click returns the card to the binder (mirrors binder toggle).
+ * - 2026-10-22: Type edge moved top -> left; name moved bottom -> top;
+ *   type dot removed; ⋯ moved bottom-right, tinted in the type color.
  */
