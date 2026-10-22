@@ -3,7 +3,7 @@
  * 🎴 BOARD TABLE SLOT COMPONENT
  *
  * Renders one equipped card on the Board Table rack.
- * Features 3px left type edge, initial/portrait avatar, inspect button.
+ * Features 3px top type edge, initial/portrait avatar, inspect button.
  */
 
 import type { Card } from "../../types/card.ts";
@@ -35,10 +35,10 @@ export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
           onToggle(card.id);
         }
       }}
-      className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-frisk/25 transition-all text-left"
-      style={{ borderLeft: `3px solid ${typeEdgeColor}` }}
+      className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-frisk/25 transition-all text-left cursor-pointer"
+      style={{ borderTop: `3px solid ${typeEdgeColor}` }}
     >
-      {/* Top: Name (type lives on the left edge) */}
+      {/* Top: Name (type lives on the top edge) */}
       <div className="flex items-center gap-1 w-full">
         <span className="text-xs font-semibold text-frisk truncate flex-1">{card.name}</span>
       </div>
@@ -84,4 +84,5 @@ export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
  *   body click returns the card to the binder (mirrors binder toggle).
  * - 2026-10-22: Type edge moved top -> left; name moved bottom -> top;
  *   type dot removed; ⋯ moved bottom-right, tinted in the type color.
+ * - 2026-10-22: cursor-pointer on hover; type edge moved back left -> top.
  */
