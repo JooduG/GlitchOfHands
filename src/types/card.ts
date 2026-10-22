@@ -37,20 +37,6 @@ export interface Card {
   created_at: string;
 }
 
-export interface CardTileItem {
-  card: Card;
-  selected: boolean;
-  tagline: string;
-  typeLabel: string;
-  builtin: boolean;
-}
-
-export interface BoardSlotItem {
-  card: Card;
-  order: number; // 0 = not a speaking character, 1..6 = rotation order
-  typeLabel: string;
-}
-
 export interface CardTypeField {
   key: string;
   label: string;

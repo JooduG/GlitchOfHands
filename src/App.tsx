@@ -671,10 +671,6 @@ export function App() {
   // ---------- derived ----------
   const hand: Card[] = ready ? tableCards(S()) : [];
   const chars = hand.filter((c) => c.type === "character");
-  const charOrder: Record<string, number> = {};
-  chars.forEach((ch, ix) => {
-    charOrder[ch.id] = ix + 1;
-  });
   const threadMsgs: Msg[] = ready ? tableThread(S()).messages : [];
   const threadSummary: string = ready ? tableThread(S()).summary : "";
   const library: Card[] = ready ? allCards(S()) : [];
@@ -904,7 +900,6 @@ export function App() {
                 <BoardSlot
                   key={card.id}
                   card={card}
-                  order={charOrder[card.id] || 0}
                   onRemove={(id) => void toggleTable(id)}
                   onInspect={(c) => setInspected(c)}
                 />
