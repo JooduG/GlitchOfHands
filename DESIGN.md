@@ -253,6 +253,7 @@ button.font-mono { font-family: var(--font-mono); }
 button.text-\[10px\] { font-size: 10px; }
 button.uppercase { text-transform: uppercase; }
 button.text-void { color: var(--color-void); }
+button.text-white { color: #fff; }
 button.text-cyan { color: var(--color-cyan); }
 button.text-frozen { color: var(--color-frozen); }
 button.font-bold { font-weight: var(--font-weight-bold); }

@@ -1131,7 +1131,7 @@ export function App() {
                       aria-label="Skip my turn — next character speaks"
                       onClick={() => void generateTurn(null)}
                       disabled={!chars.length}
-                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-void text-lg font-bold hover:brightness-110 border-l border-void/30"
+                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-white text-lg font-bold hover:brightness-110 border-l border-void/30"
                     >
                       »
                     </button>
@@ -1139,7 +1139,7 @@ export function App() {
                       type="submit"
                       title="Send"
                       aria-label="Send"
-                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-void text-lg font-bold"
+                      className="flex h-11 w-12 flex-none items-center justify-center bg-emerald text-white text-lg font-bold"
                     >
                       ›
                     </button>
@@ -1149,7 +1149,7 @@ export function App() {
               </form>
               <span
                 title={statusTitle}
-                className="max-w-28 flex-none truncate rounded-lg border border-gunmetal bg-chalk px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums sm:max-w-44"
+                className="max-w-28 flex-none truncate rounded-lg border border-gunmetal bg-chalk px-2.5 py-1 font-mono text-[11px] text-frisk tabular-nums sm:max-w-44"
               >
                 {busyMsg || statusText}
               </span>
