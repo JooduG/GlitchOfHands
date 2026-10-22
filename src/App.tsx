@@ -801,7 +801,7 @@ export function App() {
         {/* click-outside closes the binder */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 z-5"
+            className="absolute inset-0 z-[5]"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -912,7 +912,7 @@ export function App() {
                 stickBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
                 setJumpVisible(!stickBottom.current);
               }}
-              className="flex min-h-0 flex-1 overflow-y-auto space-y-3 pr-1"
+              className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto space-y-3 pr-1"
               aria-live="polite"
             >
               {threadMsgs.map((m, i) => (
@@ -1119,7 +1119,7 @@ export function App() {
                     title="Stop generating"
                     aria-label="Stop"
                     onClick={stopGen}
-                    className="flex h-11 w-22 flex-none items-center justify-center bg-danger text-void font-bold"
+                    className="flex h-11 w-[88px] flex-none items-center justify-center bg-danger text-void font-bold"
                   >
                     ■
                   </button>
