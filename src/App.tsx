@@ -20,7 +20,6 @@ import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import type { Card, CardType, CardTypeField } from "./types/card.ts";
 import { CARD_TYPE_REGISTRY } from "./types/card.ts";
-import { CardTile } from "./components/cards/CardTile.tsx";
 import { BoardSlot } from "./components/cards/BoardSlot.tsx";
 import { CardModal } from "./components/cards/CardModal.tsx";
 import { countBracketKeys } from "./engine/brackets.ts";
@@ -855,19 +854,18 @@ export function App() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div className="grid flex-1 grid-cols-2 content-start gap-2 overflow-y-auto p-3">
             {filtered.length === 0 && (
-              <div className="text-xs text-frozen font-mono px-1 py-3">
+              <div className="col-span-2 text-xs text-frozen font-mono px-1 py-3">
                 {library.length ? "No cards match." : "No cards yet — create one."}
               </div>
             )}
             {filtered.map((card) => (
-              <CardTile
+              <BoardSlot
                 key={card.id}
                 card={card}
+                fluid
                 selected={S().table.indexOf(card.id) >= 0}
-                tagline={cardTagline(card)}
-                builtin={S().starters.some((x) => x.id === card.id)}
                 onToggle={(id) => void toggleTable(id)}
                 onInspect={(c) => setInspected(c)}
               />

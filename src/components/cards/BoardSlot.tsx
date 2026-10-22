@@ -13,13 +13,15 @@ interface BoardSlotProps {
   card: Card;
   onToggle: (id: string) => void;
   onInspect: (card: Card) => void;
+  fluid?: boolean; // fill the grid cell (binder) instead of fixed w-32 (rack)
+  selected?: boolean; // equipped glow (binder grid; rack cards are all equipped)
 }
 
 function initialOf(name?: string): string {
   return String((name || "?").trim().charAt(0) || "?").toUpperCase();
 }
 
-export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
+export function BoardSlot({ card, onToggle, onInspect, fluid = false, selected = false }: BoardSlotProps) {
   const meta = CARD_TYPE_REGISTRY[card.type];
   const typeEdgeColor = meta?.color || "#11aecc";
 
@@ -35,7 +37,11 @@ export function BoardSlot({ card, onToggle, onInspect }: BoardSlotProps) {
           onToggle(card.id);
         }
       }}
-      className="group relative flex flex-col justify-between w-32 min-h-41 flex-none rounded-xl border border-frisk/10 p-2.5 bg-frisk/5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] hover:border-frisk/25 transition-all text-left cursor-pointer"
+      className={`group relative flex flex-col justify-between ${fluid ? "w-full min-w-0" : "w-32 flex-none"} min-h-41 rounded-xl border p-2.5 backdrop-blur-md shadow-[0_8px_24px_rgba(5,6,10,0.35)] transition-all text-left cursor-pointer ${
+        selected
+          ? "border-cyan/60 bg-cyan/10 shadow-[0_0_12px_rgba(17,174,204,0.25)]"
+          : "border-frisk/10 bg-frisk/5 hover:border-frisk/25"
+      }`}
       style={{ borderTop: `3px solid ${typeEdgeColor}` }}
     >
       {/* Top: Name (type lives on the top edge) */}
