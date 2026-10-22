@@ -21,7 +21,7 @@ import type { ReactNode } from "react";
 import type { Card, CardType, CardTypeField } from "./types/card.ts";
 import { CARD_TYPE_REGISTRY } from "./types/card.ts";
 import { CardTile } from "./components/cards/CardTile.tsx";
-import { BoardSlot, EmptySlot } from "./components/cards/BoardSlot.tsx";
+import { BoardSlot } from "./components/cards/BoardSlot.tsx";
 import { CardModal } from "./components/cards/CardModal.tsx";
 import { countBracketKeys } from "./engine/brackets.ts";
 import type { Msg } from "./engine/prompts.ts";
@@ -793,13 +793,6 @@ export function App() {
     );
   }
 
-  const emptyBoardText =
-    hand.length === 0
-      ? "Empty board — tap binder cards"
-      : hand.length < TABLE_MAX
-        ? `${TABLE_MAX - hand.length} empty slot${TABLE_MAX - hand.length === 1 ? "" : "s"}`
-        : "";
-
   const regFields = CARD_TYPE_REGISTRY[draft.cardType]?.fields || [];
 
   return (
@@ -906,11 +899,6 @@ export function App() {
                   onInspect={(c) => setInspected(c)}
                 />
               ))}
-              {hand.length < TABLE_MAX && (
-                <EmptySlot
-                  text={hand.length === 0 ? "Empty board — tap binder cards" : emptyBoardText}
-                />
-              )}
             </div>
           </section>
 
@@ -927,15 +915,6 @@ export function App() {
               className="flex min-h-0 flex-1 overflow-y-auto space-y-3 pr-1"
               aria-live="polite"
             >
-              {hand.length === 0 && !live && (
-                <div className="rounded-2xl border border-dashed border-gunmetal bg-[#0b101a]/30 p-8 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan/10 border border-cyan/40 text-xl">
-                    🃏
-                  </div>
-                  <h3 className="text-base font-medium text-frisk">The board is empty</h3>
-                  <p className="mt-1 text-xs text-muted">Tap a card in the binder to play it.</p>
-                </div>
-              )}
               {threadMsgs.map((m, i) => (
                 <FeedBubble
                   key={i}
