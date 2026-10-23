@@ -753,6 +753,63 @@ export function App() {
     setMenuOpen(false);
   }
 
+  async function doClearAll() {
+    const keys = [
+      "cards",
+      "customs",
+      "threads",
+      "table",
+      "tableThreads",
+      "activeCharId",
+      "activeId",
+      "hiddenStarters",
+    ];
+    try {
+      const r = window as unknown as {
+        root?: {
+          kv?: {
+            chatV1?: {
+              deleteMany?: (keys: string[]) => Promise<unknown>;
+              delete?: (key: string) => Promise<unknown>;
+            };
+          };
+        };
+      };
+      const f = r.root?.kv?.chatV1;
+      if (f) {
+        if (typeof f.deleteMany === "function") await f.deleteMany(keys);
+        else if (typeof f.delete === "function") {
+          for (const k of keys) {
+            try {
+              await f.delete(k);
+            } catch {
+              /* keep going */
+            }
+          }
+        }
+      }
+    } catch {
+      /* fall through to the local wipe */
+    }
+    try {
+      const doomed: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i);
+        if (k && k.indexOf("aichat-") === 0) doomed.push(k);
+      }
+      for (const k of doomed) window.localStorage.removeItem(k);
+    } catch {
+      /* storage blocked — the in-memory reset below still applies */
+    }
+    const fresh = await loadState();
+    stateRef.current = fresh;
+    stickBottom.current = true;
+    setJumpVisible(false);
+    setMenuOpen(false);
+    bump();
+    toast("All data cleared — fresh table.");
+  }
+
   async function onImportFile(f: File | undefined) {
     if (!f) return;
     try {
@@ -815,7 +872,7 @@ export function App() {
         {/* click-outside closes the binder */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 z-[5]"
+            className="absolute inset-0 z-5"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -1116,6 +1173,9 @@ export function App() {
                         >
                           Restore starters
                         </MenuItem>
+                        <MenuItem needsArm onClick={() => void doClearAll()}>
+                          Clear all data
+                        </MenuItem>
                         </div>
                       </>,
                       document.body
@@ -1140,7 +1200,7 @@ export function App() {
                     title="Stop generating"
                     aria-label="Stop"
                     onClick={stopGen}
-                    className="flex h-11 w-[88px] flex-none items-center justify-center bg-danger text-void font-bold"
+                    className="flex h-11 w-22 flex-none items-center justify-center bg-danger text-void font-bold"
                   >
                     ■
                   </button>
