@@ -105,6 +105,7 @@ export function sanitizeCard(dirty: unknown): Card | null {
     take("voice_preset");
     take("visual_anchor");
     take("enforcement");
+    take("forkedFrom"); // lineage: starter copies update instead of multiplying
     // legacy greeting folds into first_message
     if (!specs["first_message"] && specs["greeting"]) specs["first_message"] = specs["greeting"];
     delete specs["greeting"];

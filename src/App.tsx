@@ -187,6 +187,7 @@ export function App() {
   const [jumpVisible, setJumpVisible] = useState(false);
   const stickBottom = useRef(true);
   const generating = useRef<{ stop: () => void } | null>(null);
+  const savingRef = useRef(false); // save-editor busy guard (slow saves + double-click = duplicates)
   const compacting = useRef(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -557,6 +558,7 @@ export function App() {
   }
 
   async function saveEditor() {
+    if (savingRef.current) return; // double-click / Enter-mash guard
     const s = S();
     const info = CARD_TYPE_REGISTRY[draft.cardType];
     if (!info) {
@@ -573,13 +575,25 @@ export function App() {
       toast("Write a definition — the core prose of the card.");
       return;
     }
+    savingRef.current = true;
+    bump();
     const existing = draft.cardId ? getCard(s, draft.cardId) : null;
     const existingBuiltin = !!(existing && s.starters.some((x) => x.id === existing.id));
+    // A starter you already forked updates your copy instead of multiplying it.
+    let forkId: string | null = null;
+    if (existingBuiltin && existing) {
+      for (let i = s.customs.length - 1; i >= 0; i--) {
+        if (s.customs[i].specs && s.customs[i].specs.forkedFrom === existing.id) {
+          forkId = s.customs[i].id;
+          break;
+        }
+      }
+    }
     const data: Card = {
       id:
         existing && !existingBuiltin
           ? existing.id
-          : "card-" + slug(name) + "-" + Date.now().toString(36),
+          : forkId || "card-" + slug(name) + "-" + Date.now().toString(36),
       name,
       type: draft.cardType,
       image: draft.image || "",
@@ -590,7 +604,10 @@ export function App() {
           ? existing.created_at
           : new Date().toISOString(),
     };
-    if (existingBuiltin) toast("Starter card kept as-is. Saved your copy.");
+    if (existingBuiltin && existing) {
+      data.specs.forkedFrom = existing.id;
+      toast(forkId ? "Saved your copy." : "Starter card kept as-is. Saved your copy.");
+    }
     let found = false;
     s.customs = s.customs.map((x) => {
       if (x.id === data.id) {
@@ -623,6 +640,7 @@ export function App() {
     setDraft({ ...CLOSED_DRAFT });
     bump();
     toast(`Saved card: ${data.name}.`);
+    savingRef.current = false;
   }
 
   async function deleteEditing() {
@@ -1421,9 +1439,10 @@ export function App() {
               <button
                 type="button"
                 onClick={() => void saveEditor()}
-                className="rounded-lg bg-emerald px-4 py-2 text-sm font-bold text-void hover:brightness-110"
+                disabled={savingRef.current}
+                className="rounded-lg bg-emerald px-4 py-2 text-sm font-bold text-void hover:brightness-110 disabled:opacity-50"
               >
-                Save card
+                {savingRef.current ? "Saving…" : "Save card"}
               </button>
               <button
                 type="button"
