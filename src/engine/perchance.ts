@@ -275,6 +275,25 @@ export function estimateTableTokens(
   return localEstimate(String(p.instruction || "") + String(p.startWith || ""));
 }
 
+/**
+ * Live starter deck from main.pjs when running inside Perchance.
+ * Returns null outside Perchance (dev/preview) or when the root call
+ * fails — callers fall back to the bundled STARTER_CARDS. Shape is
+ * validated loosely here; store.ts sanitizes each entry.
+ */
+export function getStarterCards(): unknown[] | null {
+  try {
+    const r = getRoot();
+    if (r && typeof r.getStarterCards === "function") {
+      const raw = r.getStarterCards() as unknown;
+      if (Array.isArray(raw) && raw.length) return raw;
+    }
+  } catch {
+    /* fall through to bundle */
+  }
+  return null;
+}
+
 export function getIdealMaxTokens(): number {
   // Dev/no-root fallback only. In production the window comes from
   // root.getIdealMaxTokens() (live metaobject; main.pjs owns its fallback).

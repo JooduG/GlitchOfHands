@@ -12,7 +12,7 @@ import type { Card, CardType } from "../types/card.ts";
 import { CARD_TYPE_REGISTRY } from "../types/card.ts";
 import { STARTER_CARDS } from "../data/starter-cards.ts";
 import type { Msg } from "./prompts.ts";
-import { storeGet, storeSet } from "./perchance.ts";
+import { getStarterCards, storeGet, storeSet } from "./perchance.ts";
 
 export type { Msg };
 
@@ -285,10 +285,20 @@ export function shuffleHand(all: Card[]): string[] {
 
 export async function loadState(): Promise<PersistState> {
   const hiddenStarters = (await storeGet<string[]>("hiddenStarters", [])) || [];
-  const starters = STARTER_CARDS.filter((c) => hiddenStarters.indexOf(c.id) < 0).map((c) => ({
+  // Live deck from main.pjs inside Perchance; bundled copy in dev/preview.
+  let starters: Card[] = STARTER_CARDS.filter((c) => hiddenStarters.indexOf(c.id) < 0).map((c) => ({
     ...c,
     specs: { ...(c.specs || {}) },
   }));
+  try {
+    const live = getStarterCards();
+    if (live && live.length) {
+      const clean = live.map(sanitizeOrMigrate).filter(Boolean) as Card[];
+      if (clean.length) starters = clean.filter((c) => hiddenStarters.indexOf(c.id) < 0);
+    }
+  } catch {
+    /* keep the bundle */
+  }
   let stored = await storeGet<unknown>("cards", null);
   if (stored === null || stored === undefined) {
     const legacy = (await storeGet<unknown[]>("customs", [])) || [];
