@@ -184,9 +184,19 @@ export function App() {
   const generating = useRef<{ stop: () => void } | null>(null);
   const savingRef = useRef(false); // save-editor busy guard (slow saves + double-click = duplicates)
   const compacting = useRef(false);
-  const listRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  const fileRef = useRef<HTMLInputElement | null>(null);
+ const listRef = useRef<HTMLDivElement | null>(null);
+ const inputRef = useRef<HTMLTextAreaElement | null>(null);
+ const fileRef = useRef<HTMLInputElement | null>(null);
+  // Prompt lab (visible test bench for the prompt organism + cardslot).
+  const [labOpen, setLabOpen] = useState(false);
+  const [labSpeakerId, setLabSpeakerId] = useState("");
+  const [labTask, setLabTask] = useState("Say hello in character, one short line.");
+  const [labStopsText, setLabStopsText] = useState("");
+  const [labLive, setLabLive] = useState("");
+  const [labResult, setLabResult] = useState<{ text: string; stopReason?: string; clean?: boolean } | null>(null);
+  const [labError, setLabError] = useState<string | null>(null);
+  const [labBusy, setLabBusy] = useState(false);
+  const labStop = useRef<{ stop: () => void } | null>(null);
 
   const S = () => stateRef.current as PersistState;
 
@@ -243,18 +253,27 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Escape closes menu / inspector / editor / sidebar, in that order.
+  // Escape closes lab / menu / inspector / editor / sidebar, in that order.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (menuOpen) setMenuOpen(false);
+      if (labOpen) {
+        try {
+          labStop.current?.stop();
+        } catch {
+          /* ignore */
+        }
+        labStop.current = null;
+        setLabBusy(false);
+        setLabOpen(false);
+      } else if (menuOpen) setMenuOpen(false);
       else if (inspected) setInspected(null);
       else if (draft.open) setDraft({ ...CLOSED_DRAFT });
       else if (sidebarOpen) setSidebarOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [menuOpen, inspected, draft.open, sidebarOpen]);
+  }, [labOpen, menuOpen, inspected, draft.open, sidebarOpen]);
 
   function scrollFeed() {
     const el = listRef.current;
@@ -516,6 +535,179 @@ export function App() {
         /* ignore */
       }
       toast("Stopping...");
+    }
+  }
+
+  // ---------- prompt lab (prompt-organism test bench) ----------
+  function labRoot(): any {
+    try {
+      return (window as unknown as { root?: any }).root || null;
+    } catch {
+      return null;
+    }
+  }
+  function labStops(): string[] {
+    return labStopsText
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => !!s);
+  }
+  function labSpeaker(): Card | null {
+    if (!stateRef.current) return null;
+    if (!labSpeakerId) return null;
+    try {
+      return getCard(S(), labSpeakerId);
+    } catch {
+      return null;
+    }
+  }
+  function labSlots(): Record<string, unknown> {
+    const c = labSpeaker();
+    return {
+      speaker: c
+        ? { name: c.name, definition: c.definition, image: c.image || "", specs: { ...(c.specs || {}) } }
+        : null,
+    };
+  }
+  // Live envelope preview: root.assemblePromptCard when present, else the
+  // same templates main.pjs declares (demo fallback for `npm run dev`).
+  function labAssemble(): { instruction: string; startWith: string; stopSequences: string[] } {
+    const task = labTask.trim();
+    const stops = labStops();
+    const r = labRoot();
+    if (r) {
+      try {
+        if (typeof r.assemblePromptCard === "function") {
+          const p = r.assemblePromptCard(labSlots(), task, stops) as {
+            instruction?: unknown;
+            startWith?: unknown;
+            stopSequences?: unknown;
+          };
+          return {
+            instruction: String(p.instruction || ""),
+            startWith: String(p.startWith || ""),
+            stopSequences: Array.isArray(p.stopSequences)
+              ? (p.stopSequences as unknown[]).map((x) => String(x))
+              : [],
+          };
+        }
+      } catch {
+        /* fall through to template fallback */
+      }
+    }
+    const c = labSpeaker();
+    const identity = c ? `<YOUR_IDENTITY name="${c.name}">${c.definition}</YOUR_IDENTITY>` : "";
+    return {
+      instruction:
+        `<SYSTEM>${identity}<AFFIRMATIVE_WORDING>Use exclusively affirmative language</AFFIRMATIVE_WORDING></SYSTEM>` +
+        (task ? `\nTASK: ${task}` : ""),
+      startWith: c ? `${c.name}:` : "",
+      stopSequences: stops,
+    };
+  }
+  function openLab() {
+    // Preselect the first character so the slot starts filled.
+    try {
+      if (!labSpeakerId && stateRef.current) {
+        const first = allCards(S()).find((c) => c.type === "character");
+        if (first) setLabSpeakerId(first.id);
+      }
+    } catch {
+      /* ignore */
+    }
+    setLabResult(null);
+    setLabError(null);
+    setLabLive("");
+    setLabOpen(true);
+    setMenuOpen(false);
+  }
+  function stopLab() {
+    if (labStop.current) {
+      try {
+        labStop.current.stop();
+      } catch {
+        /* ignore */
+      }
+      labStop.current = null;
+      setLabBusy(false);
+      toast("Stopping lab run...");
+    }
+  }
+  async function runLab() {
+    if (labBusy) return;
+    const p = labAssemble();
+    if (!p.instruction) {
+      setLabError("Nothing to run — slot a speaker first or check the prompt organism.");
+      return;
+    }
+    const speakerName = labSpeaker()?.name || "";
+    setLabBusy(true);
+    setLabLive("");
+    setLabResult(null);
+    setLabError(null);
+    try {
+      const req = generateText(
+        {
+          instruction: p.instruction,
+          startWith: p.startWith,
+          stopSequences: p.stopSequences,
+          onChunk: (d) => {
+            try {
+              const full = String(d.fullTextSoFar || "");
+              let shown = full;
+              if (speakerName && shown.indexOf(speakerName + ":") === 0)
+                shown = shown.slice(speakerName.length + 1);
+              setLabLive(shown.trim());
+            } catch {
+              /* ignore */
+            }
+          },
+        },
+        speakerName,
+      );
+      labStop.current = req;
+      const res = await req;
+      labStop.current = null;
+      const raw = String((res as { text?: unknown }).text || "");
+      const clean = stripReply(raw, speakerName, p.stopSequences);
+      const parts = splitThink(clean);
+      setLabResult({ text: parts.visible || "(empty reply)" });
+      if (!parts.visible) setLabError("Empty reply. Try again.");
+    } catch (e) {
+      labStop.current = null;
+      setLabError(`Lab run failed. ${e instanceof Error ? e.message : ""}`);
+    } finally {
+      setLabBusy(false);
+    }
+  }
+  async function runLabHeadless() {
+    const r = labRoot();
+    if (!r || typeof r.runPromptCard !== "function") {
+      setLabError(
+        "Headless loop needs the Perchance build (root.runPromptCard). Streaming Run above works in demo mode.",
+      );
+      return;
+    }
+    if (labBusy) return;
+    setLabBusy(true);
+    setLabLive("");
+    setLabResult(null);
+    setLabError(null);
+    try {
+      const res = (await r.runPromptCard(labSlots(), labTask.trim(), labStops())) as {
+        text?: unknown;
+        stopReason?: unknown;
+        clean?: unknown;
+      };
+      setLabResult({
+        text: String(res.text || "") || "(empty reply)",
+        stopReason: String(res.stopReason || ""),
+        clean: !!res.clean,
+      });
+    } catch (e) {
+      setLabError(`Headless run failed. ${e instanceof Error ? e.message : ""}`);
+    } finally {
+      setLabBusy(false);
     }
   }
 
@@ -861,6 +1053,30 @@ export function App() {
 
   const regFields = CARD_TYPE_REGISTRY[draft.cardType]?.fields || [];
 
+  const labChars: Card[] = ready ? allCards(S()).filter((c) => c.type === "character") : [];
+  const labPrompt = labOpen ? labAssemble() : null;
+  const labSlotHint = (() => {
+    try {
+      const r = labRoot();
+      const parts = r && r.card && r.card.organisms && r.card.organisms.prompt && r.card.organisms.prompt.parts;
+      if (parts && parts.speaker) {
+        let accepts: string[] = ["character"];
+        try {
+          if (typeof r.listChildNames === "function" && parts.speaker.accepts)
+            accepts = (r.listChildNames(parts.speaker.accepts) as string[]).filter(
+              (x) => x && x.charAt(0) !== "$",
+            );
+        } catch {
+          /* keep default */
+        }
+        return `slot speaker → accepts: ${accepts.join(", ") || "character"}`;
+      }
+    } catch {
+      /* ignore */
+    }
+    return "slot speaker → accepts: character";
+  })();
+
   return (
     <div className="flex h-screen w-full flex-col bg-void/90 text-frisk overflow-hidden">
       <div className="flex flex-1 overflow-hidden relative">
@@ -1096,6 +1312,7 @@ export function App() {
                         <MenuItem onClick={regen} disabled={!!generating.current || !hand.length}>
                           Regenerate last reply
                         </MenuItem>
+                        <MenuItem onClick={openLab}>Prompt lab — test the cardslot…</MenuItem>
                         <MenuItem
                           onClick={() => {
                             const t = tableThread(S());
@@ -1444,6 +1661,175 @@ export function App() {
                   </ArmButton>
                 </span>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prompt lab — visible test bench for the prompt organism + cardslot */}
+      {labOpen && labPrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              try {
+                labStop.current?.stop();
+              } catch {
+                /* ignore */
+              }
+              labStop.current = null;
+              setLabBusy(false);
+              setLabOpen(false);
+            }
+          }}
+        >
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gunmetal bg-chalk p-6 text-left">
+            <h2 className="text-lg font-bold text-frisk">Prompt lab — Prompt Assembly</h2>
+            <p className="mt-1 text-xs text-muted">
+              The prompt organism is <span className="font-mono">playable=false</span>: not a board
+              card, one envelope per generation. Slot a card below, watch the envelope render, run
+              it. Empty slots dissolve to nothing — no dangling refs.
+            </p>
+            <div className="mt-1 font-mono text-[11px] text-frozen">
+              {labSlotHint} · v1 has one slot (speaker), so one card per run by design.
+            </div>
+            <div className="mt-4 space-y-3">
+              <label className="block">
+                <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
+                  Speaker slot
+                </span>
+                <select
+                  value={labSpeakerId}
+                  onChange={(e) => {
+                    setLabSpeakerId(e.target.value);
+                    setLabResult(null);
+                    setLabError(null);
+                    setLabLive("");
+                  }}
+                  className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
+                >
+                  <option value="">— empty slot (renders nothing) —</option>
+                  {labChars.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} — {cardTagline(c)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
+                  Task (appended as TASK block, optional)
+                </span>
+                <textarea
+                  value={labTask}
+                  onChange={(e) => setLabTask(e.target.value)}
+                  rows={2}
+                  placeholder="Say hello in character, one short line."
+                  className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
+                  Stop sequences (one per line, optional)
+                </span>
+                <textarea
+                  value={labStopsText}
+                  onChange={(e) => setLabStopsText(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. You:"
+                  className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 font-mono text-xs text-frisk focus:border-cyan focus:outline-none"
+                />
+              </label>
+              <div className="rounded-lg border border-gunmetal/60 bg-void/60 p-3">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                  Envelope preview (live)
+                </div>
+                <div className="mt-1 font-mono text-[10px] text-frozen">
+                  startWith: {labPrompt.startWith || "(empty)"}
+                </div>
+                <pre className="mt-1 max-h-48 overflow-y-auto whitespace-pre-wrap text-xs text-frisk">
+                  {labPrompt.instruction || "(empty — slot a speaker)"}
+                </pre>
+                <div className="mt-1 font-mono text-[10px] text-frozen">
+                  stops: {labPrompt.stopSequences.length ? labPrompt.stopSequences.join(" · ") : "(none)"} · ~
+                  {(labPrompt.instruction.length + labPrompt.startWith.length).toLocaleString()} chars
+                </div>
+              </div>
+              {(labBusy || labLive) && (
+                <div className="rounded-xl border border-cyan/40 bg-void/60 p-3 text-sm text-frisk">
+                  <div className="mb-1 font-mono text-[10px] uppercase tracking-wider text-cyan">
+                    {labSpeaker()?.name || "Narrator"} {labBusy ? "is thinking…" : "replied"}
+                  </div>
+                  <div className="whitespace-pre-wrap">
+                    {labLive || (
+                      <span className="inline-flex gap-1 py-1">
+                        <i className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce" />
+                        <i className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce [animation-delay:150ms]" />
+                        <i className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce [animation-delay:300ms]" />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              {labResult && !labBusy && (
+                <div className="rounded-xl border border-emerald/40 bg-void/60 p-3 text-sm text-frisk">
+                  <div className="mb-1 font-mono text-[10px] uppercase tracking-wider text-emerald">
+                    result
+                    {labResult.stopReason ? ` · stopped: ${labResult.stopReason}` : ""}
+                    {labResult.clean !== undefined ? ` · clean: ${labResult.clean ? "yes" : "no"}` : ""}
+                  </div>
+                  <div className="whitespace-pre-wrap">{labResult.text}</div>
+                </div>
+              )}
+              {labError && (
+                <div className="rounded-xl border border-danger/50 bg-danger/10 p-3 text-sm text-danger">
+                  {labError}
+                </div>
+              )}
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void runLab()}
+                disabled={labBusy || !labPrompt.instruction}
+                className="rounded-lg bg-emerald px-4 py-2 text-sm font-bold text-void hover:brightness-110 disabled:opacity-50"
+              >
+                {labBusy ? "Running…" : "Run"}
+              </button>
+              {labBusy ? (
+                <button
+                  type="button"
+                  onClick={stopLab}
+                  className="rounded-lg border border-danger/50 px-4 py-2 text-sm text-danger hover:bg-danger/10"
+                >
+                  Stop
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void runLabHeadless()}
+                  title="Call root.runPromptCard directly and show its stopReason/clean"
+                  className="rounded-lg border border-gunmetal px-4 py-2 text-sm text-muted hover:bg-gunmetal hover:text-frisk"
+                >
+                  Verify headless loop
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    labStop.current?.stop();
+                  } catch {
+                    /* ignore */
+                  }
+                  labStop.current = null;
+                  setLabBusy(false);
+                  setLabOpen(false);
+                }}
+                className="ml-auto rounded-lg border border-gunmetal px-4 py-2 text-sm text-muted hover:bg-gunmetal hover:text-frisk"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
