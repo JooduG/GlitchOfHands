@@ -96,14 +96,10 @@ export function sanitizeCard(dirty: unknown): Card | null {
       const v = so[k];
       if (v !== undefined && v !== null && String(v) !== "") specs[k] = String(v);
     };
-    // registry-declared fields + legacy greeting + bracket texts
+    // registry-declared fields + legacy greeting
     const fields = CARD_TYPE_REGISTRY[type]?.fields || [];
     for (const f of fields) take(f.key);
     take("greeting");
-    take("public_state");
-    take("private_state");
-    take("voice_preset");
-    take("visual_anchor");
     take("enforcement");
     take("forkedFrom"); // lineage: starter copies update instead of multiplying
     // legacy greeting folds into first_message

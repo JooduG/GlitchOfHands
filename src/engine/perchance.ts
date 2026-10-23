@@ -272,14 +272,17 @@ export function estimateTableTokens(
     /* fall through */
   }
   const p = localTable(hand, messages, summary, speaker, "", "Write the next response.");
-  return localEstimate(p.instruction);
+  return localEstimate(String(p.instruction || "") + String(p.startWith || ""));
 }
 
 export function getIdealMaxTokens(): number {
+  // Dev/no-root fallback only. In production the window comes from
+  // root.getIdealMaxTokens() (live metaobject; main.pjs owns its fallback).
+  const FALLBACK_WINDOW = 6000;
   try {
     const r = getRoot();
     if (r && typeof r.getIdealMaxTokens === "function")
-      return Number(r.getIdealMaxTokens()) || 6000;
+      return Number(r.getIdealMaxTokens()) || FALLBACK_WINDOW;
     if (r && typeof r.generateText === "function") {
       const meta = r.generateText({ getMetaObject: true }) as { idealMaxContextTokens?: unknown };
       if (meta && Number(meta.idealMaxContextTokens)) return Number(meta.idealMaxContextTokens);
@@ -287,12 +290,14 @@ export function getIdealMaxTokens(): number {
   } catch {
     /* ignore */
   }
-  return 6000;
+  return FALLBACK_WINDOW;
 }
 
 export function summaryTriggerRatio(): number {
   try {
     const r = getRoot();
+    const s = Number(r && r.settings && r.settings.tokens && r.settings.tokens.budgetRatio);
+    if (s > 0 && s < 1) return s;
     const n = Number(r && r.chatDefaults && r.chatDefaults.summaryTriggerRatio);
     if (n > 0.3 && n < 1) return n;
   } catch {

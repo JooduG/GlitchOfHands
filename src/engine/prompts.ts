@@ -1,21 +1,14 @@
 /**
  * src/engine/prompts.ts
- * 🎭 TABLE / DIRECTOR PROMPT BUILDERS (pure — no Perchance dependency)
+ * TABLE / DIRECTOR PROMPT BUILDERS (pure — no Perchance dependency)
  *
  * Faithful port of the main.pjs canonicals (buildTablePrompt,
  * buildDirectorPrompt, cardPromptSection, tableTranscriptLines,
- * tableUserName, equippedSortOrder) **plus the bracket rendering that
- * main.pjs still lacks**: public brackets go on every card, private
- * brackets only on the current speaker's own section and the director
- * staging pass. Cards without brackets produce byte-identical output to
- * main.pjs, so the improvement is strictly additive.
- *
- * Follow-up for the Perchance side: apply the same bracket lines to
- * main.pjs `cardPromptSection` / `buildTablePrompt` (see PERCHANCE_SYNC.md).
+ * tableUserName, equippedSortOrder). Cards without extra specs produce
+ * byte-identical output to main.pjs.
  */
 
 import type { Card } from "../types/card.ts";
-import { bracketLine, getBrackets } from "./brackets.ts";
 
 export interface Msg {
   role: "user" | "char" | "system";
@@ -54,12 +47,8 @@ function firstMessageOf(card: Card): string {
   }
 }
 
-/**
- * One stable prompt section for a card. `includePrivate` true only for the
- * director staging pass and the speaker's own section — everyone else sees
- * public state only.
- */
-export function cardPromptSection(card: Card, includePrivate: boolean): string {
+/** One stable prompt section for a card. Mirrors main.pjs. */
+export function cardPromptSection(card: Card, _includePrivate: boolean): string {
   const c = card || ({} as Card);
   const type = String(c.type || "character");
   const name = String(c.name || "Untitled");
@@ -87,12 +76,12 @@ export function cardPromptSection(card: Card, includePrivate: boolean): string {
     const fm = firstMessageOf(c);
     if (fm) out += ` They sound like: ${fm}`;
   }
-  const br = getBrackets(c);
-  const pub = bracketLine(br.public);
-  if (pub) out += ` Public state: ${pub}.`;
-  if (includePrivate) {
-    const priv = bracketLine(br.private);
-    if (priv) out += ` Private state (only you and the director know this): ${priv}.`;
+  if (type === "rule") {
+    const enf = String((c.specs || {}).enforcement || "strict");
+    out +=
+      enf === "guideline"
+        ? " Treat this as a guideline, not an absolute."
+        : " Enforce this strictly.";
   }
   return out;
 }
@@ -208,11 +197,6 @@ export function buildTablePrompt(
     let head = `CURRENT SPEAKER ${speakerName}: ${String(speaker.definition || "")}`;
     const sfm = firstMessageOf(speaker);
     if (sfm) head += ` They sound like: ${sfm}.`;
-    const own = getBrackets(speaker);
-    const ownPub = bracketLine(own.public);
-    if (ownPub) head += ` Your public state: ${ownPub}.`;
-    const ownPriv = bracketLine(own.private);
-    if (ownPriv) head += ` Your private state (no one else knows this): ${ownPriv}.`;
     parts.push(head);
   }
   const castNames: string[] = [];
@@ -271,7 +255,7 @@ export function buildTablePrompt(
   return { instruction, startWith, stopSequences: stops };
 }
 
-/** The hidden staging pass. Sees every card with private brackets included. */
+/** The hidden staging pass. Sees every card in full. */
 export function buildDirectorPrompt(
   handInput: Card[],
   messagesInput: Msg[],

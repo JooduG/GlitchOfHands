@@ -2,8 +2,8 @@
  * src/components/cards/CardModal.tsx
  * 🔍 CARD INSPECTION & EDIT ENTRY MODAL
  *
- * Read-only inspection: avatar, definition, opening line, public/private
- * brackets, role behavior. Optional `onEdit` adds the "Edit card" jump
+ * Read-only inspection: avatar, definition, opening line,
+ * role behavior. Optional `onEdit` adds the "Edit card" jump
  * into the full editor (board ⋯ buttons and binder rows use this).
  */
 
@@ -11,7 +11,6 @@ import type { Card } from "../../types/card.ts";
 import { CARD_TYPE_REGISTRY } from "../../types/card.ts";
 import { CardAvatar } from "./CardAvatar.tsx";
 import { TypeBadge } from "./TypeBadge.tsx";
-import { bracketLine, getBrackets } from "../../engine/brackets.ts";
 
 interface CardModalProps {
   card: Card | null;
@@ -25,9 +24,6 @@ export function CardModal({ card, isOpen, onClose, onEdit }: CardModalProps) {
 
   const meta = CARD_TYPE_REGISTRY[card.type];
   const firstMessage = (card.specs && (card.specs.first_message || card.specs.greeting)) || "";
-  const brackets = getBrackets(card);
-  const pubLine = bracketLine(brackets.public);
-  const privLine = bracketLine(brackets.private);
 
   return (
     <div
@@ -78,28 +74,6 @@ export function CardModal({ card, isOpen, onClose, onEdit }: CardModalProps) {
               </label>
               <div className="rounded-lg border border-cyan/30 bg-cyan/5 p-3 text-sm text-frisk italic">
                 &ldquo;{firstMessage}&rdquo;
-              </div>
-            </div>
-          )}
-
-          {pubLine && (
-            <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-muted mb-1">
-                Public state &bull; visible to all
-              </label>
-              <div className="rounded-lg border border-gunmetal/60 bg-void/50 p-3 font-mono text-xs text-frisk whitespace-pre-wrap">
-                {pubLine}
-              </div>
-            </div>
-          )}
-
-          {privLine && (
-            <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-muted mb-1">
-                Private state &bull; hidden from others
-              </label>
-              <div className="rounded-lg border border-purple/30 bg-purple/5 p-3 font-mono text-xs text-frisk whitespace-pre-wrap">
-                {privLine}
               </div>
             </div>
           )}

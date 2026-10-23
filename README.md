@@ -39,21 +39,20 @@ interface Card {
 
 Defined once in `getCardTypes()` — the single source of truth:
 
-- **`character`**: Speaking role. Unlocks `first_message`, `voice_preset`, `public_state`, `private_state`.
+- **`character`**: Speaking role. Unlocks `first_message`.
 - **`persona`**: Protagonist roleplay identity.
 - **`scenario`**: Situation, setup, or background context.
-- **`location`**: Place and sensory anchor. Unlocks `visual_anchor`, `public_state`, `private_state`.
-- **`challenge`**: Objectives and countdowns. Unlocks `public_state`, `private_state`.
+- **`location`**: Place and sensory anchor.
+- **`challenge`**: Objectives and countdowns.
 - **`director`**: Invisible puppeteer. Triggers 2-shot staging passes (`<think>` seeding).
 - **`style`**: Prose voice and literary cadence.
-- **`rule`**: Hard constraints. Unlocks `enforcement` (`strict` | `guideline`), `public_state`, `private_state`.
+- **`rule`**: Hard constraints. Unlocks `enforcement` dropdown (`strict` | `guideline`, default `strict`).
 
-### Epistemic Partitioning (Public & Private Brackets)
+### Rule Enforcement
 
-`public_state` and `private_state` are multiline `KEY: value` text.
-
-- **Public brackets** go into every entity's prompt.
-- **Private brackets** reach only the card's own speaker turn and the director staging pass — other characters never see them, preventing AI telepathy without regex hackery.
+`rule` cards carry an `enforcement` dropdown. `strict` appends "Enforce this
+strictly." to the prompt section, `guideline` appends "Treat this as a
+guideline, not an absolute."
 
 ---
 
@@ -95,18 +94,16 @@ Then use `root.chatPlugin.*`:
 - `root.chatPlugin.createCardSkeleton(type)` → blank card with timestamp.
 - `root.chatPlugin.sanitizeCard(dirty)` → enforce the card shape, never throws.
 - `root.chatPlugin.migrateLegacyCharacter(oldChar)` → pre-card character → character card.
-- `root.chatPlugin.cardPromptSection(card, includePrivate?)` → one stable prompt
-  section for a card. Private brackets render only when `includePrivate` is true.
-- `root.chatPlugin.parseBracketLines(text)` / `getBrackets(card)` / `bracketLine(map)`
-  → the public/private bracket toolkit.
+- `root.chatPlugin.cardPromptSection(card)` → one stable prompt
+  section for a card.
 - `root.chatPlugin.buildTablePrompt(hand, messages, summary, speaker, directorNotes, task)`
   → `{instruction, startWith, stopSequences}` for one speaker turn at a table of
   1–6 cards. `speaker` is a character card (or `null` for narrator). Other
-  characters render as `OTHER CHARACTER` with public state only. When
+  characters render as `OTHER CHARACTER` sections. When
   `directorNotes` is non-empty the speaker must open with a `<think>` block and
   `startWith` forces it.
 - `root.chatPlugin.buildDirectorPrompt(hand, messages, summary, nextSpeakerName)`
-  → the hidden staging pass. Sees every card with private brackets included.
+  → the hidden staging pass. Sees every card in full.
 - `await root.chatPlugin.getTableReply(hand, messages, summary, speakerId?)` →
   `{speaker, speakerId, text, thoughts, staging}`. Runs the director pass first
   when a director card is on the table (2-shot), else a direct turn (1-shot).

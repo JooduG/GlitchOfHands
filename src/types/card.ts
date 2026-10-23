@@ -19,11 +19,7 @@ export type CardType =
 export interface CardSpecs {
   first_message?: string;
   greeting?: string;
-  voice_preset?: string;
-  visual_anchor?: string;
-  enforcement?: "strict" | "guideline";
-  public_state?: string;
-  private_state?: string;
+  enforcement?: string;
   [key: string]: string | undefined;
 }
 
@@ -42,6 +38,11 @@ export interface CardTypeField {
   label: string;
   placeholder: string;
   multiline?: boolean;
+  atom?: string;
+  control?: "text" | "textarea" | "select";
+  readonly?: boolean;
+  options?: string[];
+  defaultValue?: string;
 }
 
 export interface CardTypeDefinition {
@@ -64,6 +65,8 @@ export const CARD_TYPE_REGISTRY: Record<CardType, CardTypeDefinition> = {
         label: "First message",
         placeholder: "The first thing they say",
         multiline: true,
+        atom: "textfield",
+        control: "textarea",
       },
     ],
   },
@@ -114,7 +117,17 @@ export const CARD_TYPE_REGISTRY: Record<CardType, CardTypeDefinition> = {
     label: "Rule",
     description: "A hard behavioral or narrative constraint.",
     color: "#8b93a1",
-    fields: [],
+    fields: [
+      {
+        key: "enforcement",
+        label: "Enforcement",
+        placeholder: "",
+        atom: "dropdown",
+        control: "select",
+        options: ["strict", "guideline"],
+        defaultValue: "strict",
+      },
+    ],
   },
 };
 

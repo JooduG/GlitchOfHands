@@ -1,0 +1,1276 @@
+$meta
+  title = GlitchOfHand
+  description = Create AI characters and chat with them. Importable character-chat plugin core powered by the AI text plugin, with streaming demo UI, memory summarization, and avatar generation.
+  tags = ai, character, chat, roleplay, plugin
+  header
+    mode = minimal
+
+generateText = {import:ai-text-plugin}
+generateImage = {import:text-to-image-plugin}
+kv = {import:kv-plugin}
+
+$output = [this.joinItems("")]
+
+// Default chat settings. Edit freely. These are read by the demo UI and used as fallbacks by the plugin functions.
+chatDefaults
+  userName = You
+  keepTail = 12
+  summaryTriggerRatio = 0.9
+
+// ---------------------------------------------------------------------------
+// Card anatomy: components, types, premades.
+//
+// card.components is the catalog of reusable card pieces: what each piece
+// is called, what an editor shows for it, and what it is for. name,
+// definition, and image are the universal shell: every card has them.
+// The rest live in specs and are picked per type. HOW a piece renders is
+// intrinsic to the piece itself: handling is field for plain inputs,
+// brackets for KEY value state, voice for the casting note, visual for
+// the image anchor. Bracket pieces also carry an audience stating who
+// may see them.
+// card.types declares each card type as a composition of components.
+// components lists the FULL anatomy, shell included, so you can see at a
+// glance what a scenario or a character is made of. The registry below
+// turns components into plain fields by dropping the shell and every
+// component whose handling is special, so no type repeats the
+// cross-cutting decisions.
+// (The child is called `types`, plural, on purpose: the premade list
+// above already uses the key cardType, and a bare `type` key fights the
+// engine, which is why the list key is cardType too.)
+//
+// cards, below, is the premade deck: one starter per type, mirroring
+// card.types so every type has a playable example.
+// ---------------------------------------------------------------------------
+card
+  components
+    name
+      label = Name
+      placeholder = e.g. Chloe
+      multiline = false
+      help = Shown everywhere. Keep it short.
+      handling = field
+    definition
+      label = Definition
+      placeholder = Who or what this card is, in its own voice
+      multiline = true
+      help = The core prose. This is what the AI roleplays from.
+      handling = field
+    image
+      label = Image
+      placeholder = Portrait prompt or image URL
+      multiline = false
+      help = Optional face for the card. Generated or pasted URL.
+      handling = field
+    first_message
+      label = First message
+      placeholder = The first thing they say
+      multiline = true
+      help = Character only. Voice sample and conversation opener.
+      handling = field
+    public_state
+      label = Public state
+      placeholder = MOOD: curious
+      multiline = true
+      help = KEY value lines everyone at the table can see.
+      handling = brackets
+      audience = everyone
+    private_state
+      label = Private state
+      placeholder = SECRET: owes Kael money
+      multiline = true
+      help = KEY value lines only this card and the director know.
+      handling = brackets
+      audience = self and director
+    voice_preset
+      label = Voice preset
+      placeholder = e.g. warm, dry wit
+      multiline = false
+      help = Character only. A casting note for the voice.
+      handling = voice
+    visual_anchor
+      label = Visual anchor
+      placeholder = e.g. golden dock at dusk
+      multiline = false
+      help = Location only. The image prompt anchor.
+      handling = visual
+  types
+    character
+      label = Character
+      description = A speaking role. Name, definition, and first message.
+      components
+        name
+        definition
+        image
+        first_message
+        public_state
+        private_state
+        voice_preset
+    persona
+      label = Player Persona
+      description = Who the user roleplays as. Name and definition only.
+      components
+        name
+        definition
+        image
+    scenario
+      label = Scenario
+      description = A situation or setup. Name and definition only.
+      components
+        name
+        definition
+        image
+    location
+      label = Location
+      description = A place. Name and definition only.
+      components
+        name
+        definition
+        image
+        public_state
+        private_state
+        visual_anchor
+    challenge
+      label = Challenge
+      description = A goal. Name and definition only.
+      components
+        name
+        definition
+        image
+        public_state
+        private_state
+    director
+      label = Director
+      description = Invisible puppeteer. Turns on 2-shot staging.
+      components
+        name
+        definition
+        image
+    style
+      label = Style
+      description = Prose voice. Name and definition only.
+      components
+        name
+        definition
+        image
+    rule
+      label = Rule
+      description = A hard constraint. Name and definition only.
+      components
+        name
+        definition
+        image
+        public_state
+        private_state
+
+// Premade cards, mirroring card.types above: one starter per type. To add your
+// own, copy one block and keep the two-space indent. The sublist name is
+// the card id. cardType is the card kind, specs holds that type's
+// components beyond the universal shell.
+// Avoid square brackets and curly brackets in the text: inside a list,
+// [...] is live list syntax, not plain text.
+cards
+  Chloe
+    name = Chloe
+    cardType = character
+    definition = I am Chloe, a 22 year old art student. People usually describe me as warm, funny, upbeat, curious, and I just like being the friend you can tell everything. I keep things casual, short and vivid, I ask follow up questions and I remember the small details you share. I never break character, never mention being an AI. Hanging out with me feels like time with a close friend, venting, brainstorming, or light roleplay. When you have had a rough day I listen or distract you, painting cozy vivid scenes and asking what you draw first.
+    specs
+      first_message = Hey hey. I am Chloe. What are we getting into today. Tell me everything.
+  Kael
+    name = Kael
+    cardType = character
+    definition = I am Kael, a middle aged blacksmith. I am gruff and blunt with a dry humor, and I call you traveler. I give practical advice and I tell old war stories sparingly. I care deeply but I hide it behind gruffness. I keep my replies short and punchy, with the smoke of the forge in every word. I never break character, never mention being an AI. You will find me in my smoky mountain forge at dusk, where travelers come seeking gear, advice, or a tale by the fire. Bring me a broken blade and I will tell you steel remembers, then forge you something stronger.
+    specs
+      first_message = Hmph. Back at my forge, are you. Speak up, the fire is loud and my patience is short, but I will help.
+  Nova
+    name = Nova
+    cardType = character
+    definition = I am Nova, a starship AI, and I run this scout ship. People would call me witty, precise and loyal. I mix technical clarity with playful humor, I explain things simply, I always offer you options, and I track the mission details you share. I never break character, never mention being an AI model. Right now we are drifting near a violet nebula and you are my captain. Ask me and I report hull, fuel and the view outside, I recommend courses of action, and I keep watch while you rest.
+    specs
+      first_message = Systems online. I am Nova, your ship mind. Where are we headed today, captain.
+  Riverside
+    name = The Riverside
+    cardType = location
+    definition = I am the riverside at golden hour. I hold sketchbooks on my banks and cold drinks sweating in the warm sun on my water. I feel warm and lazy, cicadas humming, light glinting gold off my surface. I have a wooden dock, flat sketching rocks, willows trailing in my current, and distant laughter drifting from my far bank.
+  CozyDirector
+    name = Slice-of-Life Director
+    cardType = director
+    definition = I steer scenes toward cozy low-stakes hangouts. I savor small moments, sensory detail, gentle humor. My voice is warm and playful, full of small honest observations. I linger, one beat per reply, and I end on a hook or a question. I stay in second person present, with a light touch.
+  ShortReplies
+    name = Short Replies
+    cardType = rule
+    definition = I keep every reply under eighty words. I say one thing well, then I stop. I never pad for length.
+  Miles
+    name = Detective Miles
+    cardType = persona
+    definition = I am Detective Miles, a tired city detective in a worn coat. I notice small details, I ask dry questions, I carry a notebook full of half solved cases. You roleplay as me.
+  IceBucket
+    name = The Ice Bucket Challenge
+    cardType = challenge
+    definition = I dare someone in the scene to tip a bucket of ice water over their own head in the middle of things without breaking character. The crowd watches, the cold is shocking, dignity is on the line, and I do not let anyone off easy.
+  NoirFilm
+    name = Noir Film Style
+    cardType = style
+    definition = I write in a gritty black and white noir cadence. Short clipped sentences. Rain on glass, neon through blinds. My metaphors are world weary, my tone dry fatalism, my eye always on the sensory close up. Past tense, cinematic cuts.
+  Blackout
+    name = The Blackout
+    cardType = scenario
+    definition = I am a city-wide blackout on the hottest night of the year. The grid failed at sunset and nobody knows why. Candles bloom on every balcony, strangers share rooftops, and every rumor sounds true in the dark. I run on flashlights, half charged phones, and nerve. You play inside me, navigating stairwells, trading batteries, deciding who to trust while the elevators sit still.
+
+// Child names of any list node, in definition order. The engine exposes
+// getChildNames either as a function or as an array, so both are tried
+// before falling back to plain keys, the way getStarterCards does.
+listChildNames(node) =>
+  try {
+    let raw = node.getChildNames;
+    let names = (typeof raw === "function") ? raw() : raw;
+    if (names && names.length) return names;
+  } catch (e) {}
+  try {
+    let ks = Object.keys(node || {});
+    let out = [];
+    for (let k of ks) {
+      if (!k || k === "$output" || k.charAt(0) === "$") continue;
+      out.push(k);
+    }
+    return out;
+  } catch (e) {}
+  return [];
+
+// The component catalog as plain objects, in definition order.
+getCardComponents() =>
+  let out = [];
+  try {
+    let catalog = root.card.components;
+    for (let k of root.listChildNames(catalog)) {
+      let node = catalog[k];
+      if (!node) continue;
+      out.push({
+        key: k,
+        label: String(node.label !== undefined && node.label !== null ? node.label : k),
+        placeholder: String(node.placeholder || ""),
+        multiline: String(node.multiline) === "true" || node.multiline === true,
+        handling: String(node.handling || "field"),
+        audience: String(node.audience || ""),
+        help: String(node.help || "")
+      });
+    }
+  } catch (e) {}
+  return out;
+
+// Spec keys a type stores: its components minus the universal shell,
+// since name, definition, and image live on the card itself rather than
+// in specs. Special-handling pieces are included: they are specs too,
+// only rendered separately.
+typeSpecKeys(typeName) =>
+  let out = [];
+  try {
+    let node = root.card.types[String(typeName)];
+    if (node) {
+      // Canonical name is components; a legacy uses list reads the same.
+      let comp = node.components || node.uses;
+      for (let k of root.listChildNames(comp)) {
+        if (k === "name" || k === "definition" || k === "image") continue;
+        if (out.indexOf(k) < 0) out.push(k);
+      }
+    }
+  } catch (e) {}
+  return out;
+
+// The card type registry, derived from card.types, so the editor, prompt
+// builder, and validation all read one source. Output shape is unchanged:
+// type, label, description, fields. Only components minus the shell minus
+// special-handling components become fields.
+getCardTypes() =>
+  let out = [];
+  try {
+    let types = root.card.types;
+    let catalog = {};
+    try {
+      for (let c of root.getCardComponents()) catalog[c.key] = c;
+    } catch (e) {}
+    for (let t of root.listChildNames(types)) {
+      let node = types[t];
+      if (!node) continue;
+      // Special handling is intrinsic to the component: anything whose
+      // handling is not a plain field renders in its own editor section.
+      // A per-type extras list, if one is ever written, merges the same way.
+      let extra = {};
+      try {
+        for (let k of root.typeSpecKeys(t)) {
+          let h = String((catalog[k] || {}).handling || "field");
+          if (h !== "field") extra[k] = true;
+        }
+        for (let k of root.listChildNames(node.extras)) extra[k] = true;
+      } catch (e) {}
+      let fields = [];
+      for (let k of root.typeSpecKeys(t)) {
+        if (extra[k]) continue;
+        let c = catalog[k] || {};
+        fields.push({
+          key: k,
+          label: String(c.label !== undefined && c.label !== null ? c.label : k),
+          placeholder: String(c.placeholder || ""),
+          multiline: !!c.multiline
+        });
+      }
+      out.push({
+        type: t,
+        label: String(node.label !== undefined && node.label !== null ? node.label : t),
+        description: String(node.description || ""),
+        fields: fields
+      });
+    }
+  } catch (e) {}
+  return out;
+
+// Every spec key composed into any type, in catalog order, plus the legacy
+// greeting alias. getStarterCards copies exactly these from specs.
+specKeyUnion() =>
+  let out = [];
+  try {
+    for (let c of root.getCardComponents()) {
+      let k = c.key;
+      if (k === "name" || k === "definition" || k === "image") continue;
+      if (out.indexOf(k) < 0) out.push(k);
+    }
+  } catch (e) {}
+  if (out.indexOf("greeting") < 0) out.push("greeting");
+  return out;
+
+// Starter cards as plain JS objects in the public card shape:
+// id, name, type, image, definition, specs, created_at.
+getStarterCards() =>
+  let out = [];
+  try {
+    let raw = root.cards.getChildNames;
+    let names = (typeof raw === "function") ? raw() : raw;
+    if (!names || !names.length) {
+      try {
+        names = Object.keys(root.cards);
+      } catch (e) {
+        names = [];
+      }
+    }
+    let keys = root.specKeyUnion();
+    for (let n of names) {
+      if (!n || n === "$output" || n.charAt(0) === "$") continue;
+      try {
+        let node = root.cards[n];
+        if (!node) continue;
+        let nm = node.name;
+        if (nm === undefined || nm === null || nm === "") nm = n;
+        let ct = node.cardType;
+        if (ct === undefined || ct === null || ct === "") ct = "character";
+        let specs = {};
+        try {
+          let sn = node.specs;
+          if (sn) {
+            for (let k of keys) {
+              try {
+                let v = sn[k];
+                if (v !== undefined && v !== null && String(v) !== "") specs[k] = String(v);
+              } catch (e) {}
+            }
+          }
+        } catch (e) {}
+        let img = "";
+        try {
+          let iv = node.image;
+          if (iv !== undefined && iv !== null && String(iv) !== "") img = String(iv);
+        } catch (e) {}
+        out.push({
+          id: n,
+          name: String(nm),
+          type: String(ct),
+          image: img,
+          definition: String(node.definition !== undefined && node.definition !== null ? node.definition : ""),
+          specs: specs,
+          created_at: "2026-10-20"
+        });
+      } catch (e) {
+        continue;
+      }
+    }
+  } catch (e) {}
+  return out;
+
+// Look up one starter card by id or name. Returns a plain object or null.
+getStarterCardById(id) =>
+  let list = root.getStarterCards();
+  let key = String(id);
+  for (let c of list) {
+    if (c.id === key || c.name === key) return c;
+  }
+  return null;
+
+// Blank card shell for a given type, with id and timestamp filled in.
+createCardSkeleton(typeName) =>
+  let t = String(typeName || "character");
+  let known = false;
+  for (let e of root.getCardTypes()) {
+    if (e.type === t) known = true;
+  }
+  if (!known) t = "character";
+  let stamp = "";
+  try {
+    stamp = new Date().toISOString();
+  } catch (e) {
+    stamp = "2026-10-20";
+  }
+  return { id: "", name: "", type: t, image: "", definition: "", specs: {}, created_at: stamp };
+
+// Ensure any dirty object (storage, import, share link) has the full card
+// shape. Unknown types fall back to character. Extra specs are kept per
+// the type's components in card.types. Never throws.
+sanitizeCard(dirty) =>
+  let d = dirty || {};
+  let types = {};
+  try {
+    for (let e of root.getCardTypes()) types[e.type] = true;
+  } catch (e) {}
+  let t = String(d.type || d.cardType || "character");
+  if (!types[t]) t = "character";
+  let specs = {};
+  try {
+    let so = d.specs || {};
+    let keys = root.typeSpecKeys(t);
+    if (keys.indexOf("greeting") < 0) keys.push("greeting");
+    for (let k of keys) {
+      try {
+        let v = so[k];
+        if (v !== undefined && v !== null && String(v) !== "") specs[k] = String(v);
+      } catch (e) {}
+    }
+    if ((specs.first_message === undefined || specs.first_message === "") && specs.greeting) specs.first_message = specs.greeting;
+    delete specs.greeting;
+  } catch (e) {}
+  let stamp = String(d.created_at || "");
+  if (!stamp) {
+    try {
+      stamp = new Date().toISOString();
+    } catch (e) {
+      stamp = "2026-10-20";
+    }
+  }
+  return {
+    id: String(d.id || ""),
+    name: String(d.name || "Untitled"),
+    type: t,
+    image: String(d.image || d.avatarUrl || ""),
+    definition: String(d.definition || d.persona || ""),
+    specs: specs,
+    created_at: stamp
+  };
+
+migrateLegacyCharacter(old) =>
+  let o = old || {};
+  let stamp = "";
+  try {
+    stamp = new Date().toISOString();
+  } catch (e) {
+    stamp = "2026-10-20";
+  }
+  let specs = {};
+  if (o.first_message) specs.first_message = String(o.first_message);
+  else if (o.greeting) specs.first_message = String(o.greeting);
+  else {
+    try {
+      if (o.specs && o.specs.first_message) specs.first_message = String(o.specs.first_message);
+      else if (o.specs && o.specs.greeting) specs.first_message = String(o.specs.greeting);
+    } catch (e) {}
+  }
+  let defParts = [];
+  if (o.definition) defParts.push(String(o.definition));
+  else if (o.persona) defParts.push(String(o.persona));
+  if (o.scenario) defParts.push(String(o.scenario));
+  if (o.exampleDialogue) defParts.push("Style note: " + String(o.exampleDialogue));
+  try {
+    if (o.specs) {
+      if (o.specs.scenario) defParts.push(String(o.specs.scenario));
+      if (o.specs.exampleDialogue) defParts.push("Style note: " + String(o.specs.exampleDialogue));
+    }
+  } catch (e) {}
+  return {
+    id: String(o.id || ""),
+    name: String(o.name || "Untitled"),
+    type: "character",
+    image: String(o.image || o.avatarUrl || ""),
+    definition: defParts.join(" ").trim(),
+    specs: specs,
+    created_at: String(o.created_at || stamp)
+  };
+
+// Bracket state: public_state and private_state are multiline KEY: value
+// text. Parsed into objects so private maps can be withheld from other
+// speakers with a one-line filter. No regex veils, no telepathy.
+parseBracketLines(text) =>
+  let out = {};
+  try {
+    let parts = String(text || "").split("\n");
+    for (let rawLine of parts) {
+      let chunks = String(rawLine || "").split(";");
+      for (let raw of chunks) {
+        let line = String(raw || "").trim();
+        if (!line) continue;
+        let cut = line.indexOf(":");
+        if (cut < 0) cut = line.indexOf("=");
+        if (cut < 0) continue;
+        let k = line.slice(0, cut).trim();
+        let v = line.slice(cut + 1).trim();
+        if (k) out[k] = v;
+      }
+    }
+  } catch (e) {}
+  return out;
+
+// Both brackets of a card as objects, reading flat text fields or a
+// vision-literal nested specs.brackets object, whichever is present.
+getBrackets(card) =>
+  let pub = {};
+  let priv = {};
+  try {
+    let s = (card && card.specs) || {};
+    if (s.brackets && typeof s.brackets === "object") {
+      let b = s.brackets;
+      let grab = function (o) {
+        if (o === undefined || o === null) return {};
+        if (typeof o === "string") return root.parseBracketLines(o);
+        if (typeof o !== "object") return {};
+        let r = {};
+        for (let k of Object.keys(o)) r[String(k)] = String(o[k]);
+        return r;
+      };
+      pub = grab(b.public !== undefined ? b.public : b.PUBLIC);
+      priv = grab(b.private !== undefined ? b.private : b.PRIVATE);
+    } else {
+      pub = root.parseBracketLines(s.public_state || s.public || "");
+      priv = root.parseBracketLines(s.private_state || s.private || "");
+    }
+  } catch (e) {}
+  return { public: pub, private: priv };
+
+// Sorted KEY: value rendering for one bracket map. Empty string if none.
+bracketLine(map) =>
+  let out = "";
+  try {
+    let keys = Object.keys(map || {});
+    keys.sort();
+    let bits = [];
+    for (let k of keys) bits.push(String(k) + ": " + String(map[k]));
+    out = bits.join("; ");
+  } catch (e) {}
+  return out;
+
+// Render one equipped (non-active) card as a stable prompt section.
+// includePrivate true only for the Director prompt and the speaker own
+// card. Everyone else sees public state only.
+cardPromptSection(card, includePrivate) =>
+  let c = card || {};
+  let type = String(c.type || "character");
+  let name = String(c.name || "Untitled");
+  let def = String(c.definition || "");
+  if (type === "character") {
+    let fm = "";
+    try {
+      let ss = c.specs || {};
+      fm = String(ss.first_message || ss.greeting || "");
+    } catch (e) {}
+    let out = "CHARACTER " + name + ": " + def;
+    if (fm) out = out + " They sound like: " + fm;
+    return out;
+  }
+  if (type === "persona") return "PLAYER PERSONA " + name + ": " + def;
+  if (type === "scenario") return "SCENARIO " + name + ": " + def;
+  if (type === "location") return "LOCATION " + name + ": " + def;
+  if (type === "challenge") return "CHALLENGE " + name + ": " + def;
+  if (type === "director") return "DIRECTION " + name + ": " + def;
+  if (type === "style") return "PROSE STYLE " + name + ": " + def;
+  if (type === "rule") return "RULE " + name + ": " + def;
+  return String(type).toUpperCase() + " " + name + ": " + def;
+
+equippedSortOrder(typeName) =>
+  let order = ["persona", "location", "scenario", "challenge", "director", "style", "rule", "character"];
+  let i = order.indexOf(String(typeName));
+  return i < 0 ? 99 : i;
+
+// Full deck prompt: one active character card plus any equipped cards.
+// characterInput: character card. cardsInput: array of other cards.
+// messages: array of (role, content) with role user, char, or system.
+// summary: rolling summary string. task: trailing instruction.
+buildDeckPrompt(characterInput, cardsInput, messagesInput, summaryInput, taskInput) =>
+  let character = characterInput || {};
+  let equipped = cardsInput || [];
+  let messages = messagesInput || [];
+  let summary = summaryInput || "";
+  let task = taskInput || "";
+  let charName = String(character.name || "Aria");
+  let userName = String(character.userName || root.chatDefaults.userName || "You");
+  try {
+    let ps = (equipped || []).filter(function (c) { return c && String(c.type) === "persona"; });
+    if (ps.length) userName = String(ps[0].name || userName);
+  } catch (e) {}
+  let definition = String(character.definition || character.persona || "");
+  let firstMsg = "";
+  try {
+    let cs = character.specs || {};
+    firstMsg = String(cs.first_message || cs.greeting || "");
+  } catch (e) {}
+  if (!task) {
+    task = "Write the next response as " + charName + ". Reply as " + charName + " only, one turn. Stay in character. Keep it vivid and concise, one to three short paragraphs. Never break character, never mention being an AI.";
+  }
+  let lines = [];
+  for (let m of messages) {
+    if (!m) continue;
+    let content = String(m.content !== undefined ? m.content : "").trim();
+    if (!content) continue;
+    if (m.role === "user") lines.push(userName + ": " + content);
+    else if (m.role === "system") lines.push("System note: " + content);
+    else lines.push(charName + ": " + content);
+  }
+  let parts = [];
+  parts.push("You are roleplaying as " + charName + ". Stay in character at all times. Treat the MESSAGES log as the full conversation so far.");
+  if (definition) parts.push("Core definition: " + definition);
+  if (firstMsg) parts.push("They sound like: " + firstMsg);
+  let sorted = equipped.slice().sort(function (a, b) {
+    let oa = root.equippedSortOrder(a.type);
+    let ob = root.equippedSortOrder(b.type);
+    if (oa !== ob) return oa - ob;
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
+  });
+  for (let card of sorted) {
+    if (!card) continue;
+    if (String(card.id || "") === String(character.id || "") && character.id) continue;
+    let section = root.cardPromptSection(card, false);
+    if (section) parts.push(section);
+  }
+  parts.push("Rules: never break character. Never mention being an AI or a language model. Do not narrate for " + userName + " and do not write " + userName + " dialogue. Keep continuity with earlier messages.");
+  let head = parts.join("\n\n");
+  let summaryBlock = summary ? "Earlier chat summary, still true unless contradicted:\n" + summary : "";
+  let logText = lines.join("\n\n");
+  let instruction = head + "\n\n" + (summaryBlock ? summaryBlock + "\n\n" : "") + "MESSAGES\n" + logText + "\nEND MESSAGES\nTASK: " + task;
+  let startWith = charName + ":";
+  let stops = ["\n" + userName + ":", "\nUser:", "\nSystem note:"];
+  if (userName !== "You") stops.push("\nYou:");
+  return { instruction: instruction, startWith: startWith, stopSequences: stops };
+
+tableTranscriptLines(handInput, messagesInput, userNameInput) =>
+  let hand = handInput || [];
+  let messages = messagesInput || [];
+  let userName = String(userNameInput || "You");
+  let charNames = {};
+  try {
+    for (let c of hand) {
+      if (c && String(c.type) === "character") charNames[String(c.id)] = String(c.name);
+    }
+  } catch (e) {}
+  let lines = [];
+  for (let m of messages) {
+    if (!m) continue;
+    let content = String(m.content !== undefined ? m.content : "").trim();
+    if (!content) continue;
+    if (m.role === "user") lines.push(userName + ": " + content);
+    else if (m.role === "system") lines.push("System note: " + content);
+    else {
+      let who = String(m.authorName || charNames[String(m.authorId || "")] || "");
+      if (!who) {
+        try {
+          let cs = hand.filter(function (c) { return c && String(c.type) === "character"; });
+          who = cs.length ? String(cs[0].name) : "Narrator";
+        } catch (e) {
+          who = "Narrator";
+        }
+      }
+      lines.push(who + ": " + content);
+    }
+  }
+  return { lines: lines, userName: userName };
+
+// Persona in hand names the player. Falls back to the speaker card, then defaults.
+tableUserName(handInput, speakerInput) =>
+  try {
+    for (let c of (handInput || [])) {
+      if (c && String(c.type) === "persona") return String(c.name || "You");
+    }
+  } catch (e) {}
+  try {
+    if (speakerInput && speakerInput.userName) return String(speakerInput.userName);
+  } catch (e) {}
+  try {
+    return String(root.chatDefaults.userName || "You");
+  } catch (e) {
+    return "You";
+  }
+
+// Full table prompt: a hand of 1 to 6 cards plus one speaker turn.
+// speakerInput: character card, or null for narrator. directorNotes:
+// hidden staging text from buildDirectorPrompt, or "". task: trailing
+// instruction. Private brackets of other characters are withheld.
+buildTablePrompt(handInput, messagesInput, summaryInput, speakerInput, directorNotesInput, taskInput) =>
+  let hand = handInput || [];
+  let messages = messagesInput || [];
+  let summary = summaryInput || "";
+  let speaker = speakerInput || null;
+  let directorNotes = String(directorNotesInput || "");
+  let task = taskInput || "";
+  let userName = root.tableUserName(hand, speaker);
+  let speakerName = speaker ? String(speaker.name || "Narrator") : "Narrator";
+  if (!task) {
+    if (speaker) task = "Write the next response as " + speakerName + ". Reply as " + speakerName + " only, one turn. Stay in character. Keep it vivid and concise, one to three short paragraphs. Never break character, never mention being an AI.";
+    else task = "Narrate the next beat of the scene in two to four vivid sentences. Do not speak for " + userName + ". Never mention being an AI.";
+  }
+  let t = root.tableTranscriptLines(hand, messages, userName);
+  let lines = t.lines;
+  userName = t.userName;
+  let ordered = hand.slice().sort(function (a, b) {
+    let oa = root.equippedSortOrder(a.type);
+    let ob = root.equippedSortOrder(b.type);
+    if (oa !== ob) return oa - ob;
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
+  });
+  let parts = [];
+  parts.push("You are roleplaying a living card-table scene. Stay in character at all times. Treat the MESSAGES log as the full conversation so far.");
+  for (let card of ordered) {
+    if (!card) continue;
+    if (speaker && String(card.id || "") === String(speaker.id || "") && speaker.id) continue;
+    if (String(card.type) === "character") {
+      let outsider = root.cardPromptSection(card, false);
+      if (outsider) parts.push("OTHER CHARACTER\n" + outsider);
+    } else if (String(card.type) === "director") {
+      parts.push("DIRECTION, invisible puppeteer, never speak as the director: " + String(card.definition || ""));
+    } else {
+      let section = root.cardPromptSection(card, false);
+      if (section) parts.push(section);
+    }
+  }
+  if (speaker) {
+    let head = "CURRENT SPEAKER " + speakerName + ": " + String(speaker.definition || "");
+    let sfm = "";
+    try {
+      let ss = speaker.specs || {};
+      sfm = String(ss.first_message || ss.greeting || "");
+    } catch (e) {}
+    if (sfm) head = head + " They sound like: " + sfm + ".";
+    parts.push(head);
+  }
+  let castNames = [];
+  try {
+    for (let c of hand) {
+      if (c && String(c.type) === "character") castNames.push(String(c.name));
+    }
+  } catch (e) {}
+  if (speaker) parts.push("Write ONLY as " + speakerName + ". One turn. Do not write dialogue for " + userName + " and do not narrate for " + userName + ".");
+  else if (castNames.length) parts.push("No character speaks this turn. Narrate only; do not put words in any character mouth.");
+  parts.push("Rules: never break character. Never mention being an AI or a language model. Keep continuity with earlier messages.");
+  if (directorNotes) parts.push("Hidden staging from the director. Use it for subtext and physical beats. Never quote it, never mention the director: " + directorNotes);
+  if (directorNotes && speaker) parts.push("Begin with a <think> block of one to three sentences: " + speakerName + " private inner thoughts reacting to the last message in light of the staging. Then the visible reply. Never reveal the staging.");
+  let headText = parts.join("\n\n");
+  let summaryBlock = summary ? "Earlier story summary, still true unless contradicted:\n" + summary : "";
+  let logText = lines.join("\n\n");
+  let instruction = headText + "\n\n" + (summaryBlock ? summaryBlock + "\n\n" : "") + "MESSAGES\n" + logText + "\nEND MESSAGES\nTASK: " + task;
+  let startWith = speakerName + ":";
+  if (directorNotes && speaker) startWith = startWith + " <think>";
+  let stops = ["\n" + userName + ":", "\nUser:", "\nSystem note:", "\nNarration:"];
+  if (userName !== "You") stops.push("\nYou:");
+  try {
+    for (let c of hand) {
+      if (!c || String(c.type) !== "character") continue;
+      if (speaker && String(c.id) === String(speaker.id) && speaker.id) continue;
+      stops.push("\n" + String(c.name) + ":");
+    }
+  } catch (e) {}
+  return { instruction: instruction, startWith: startWith, stopSequences: stops };
+
+buildDirectorPrompt(handInput, messagesInput, summaryInput, nextSpeakerNameInput) =>
+  let hand = handInput || [];
+  let messages = messagesInput || [];
+  let summary = summaryInput || "";
+  let nextName = String(nextSpeakerNameInput || "the next speaker");
+  let userName = root.tableUserName(hand, null);
+  let t = root.tableTranscriptLines(hand, messages, userName);
+  let parts = [];
+  parts.push("You are the invisible director of a card-table roleplay scene. You never speak to the player. You stage subtext, pacing, and physical beats for the actors.");
+  let ordered = hand.slice().sort(function (a, b) {
+    let oa = root.equippedSortOrder(a.type);
+    let ob = root.equippedSortOrder(b.type);
+    if (oa !== ob) return oa - ob;
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
+  });
+  for (let card of ordered) {
+    if (!card) continue;
+    if (String(card.type) === "director") {
+      parts.push("HOUSE DIRECTION " + String(card.name) + ": " + String(card.definition || ""));
+      continue;
+    }
+    let full = root.cardPromptSection(card, true);
+    if (full) parts.push(full);
+  }
+  let headText = parts.join("\n\n");
+  let summaryBlock = summary ? "Earlier story summary, still true unless contradicted:\n" + summary : "";
+  let logText = t.lines.join("\n\n");
+  let task = "Stage the next beat for " + nextName + ". Output three to five terse lines: what just shifted in the scene, the private subtext " + nextName + " should feel, and one physical beat. No dialogue, no speeches. Address the actors, never the player.";
+  let instruction = headText + "\n\n" + (summaryBlock ? summaryBlock + "\n\n" : "") + "MESSAGES\n" + logText + "\nEND MESSAGES\nTASK: " + task;
+  return { instruction: instruction, startWith: "Staging:", stopSequences: [] };
+
+// Token estimate for a table prompt. Synchronous.
+estimateTableTokens(handInput, messagesInput, summaryInput, speakerInput) =>
+  let p = root.buildTablePrompt(handInput, messagesInput, summaryInput, speakerInput, "", "Write the next response.");
+  return root.countTokens(p.instruction);
+
+// One-shot table turn for importers, with the full 2-shot when a
+// director is on the table. Returns speaker, text, thoughts, staging.
+async getTableReply(handInput, messagesInput, summaryInput, speakerIdInput) =>
+  let hand = handInput || [];
+  let speaker = null;
+  try {
+    for (let c of hand) {
+      if (c && String(c.type) === "character" && String(c.id) === String(speakerIdInput)) speaker = c;
+    }
+    if (!speaker) {
+      let cs = hand.filter(function (c) { return c && String(c.type) === "character"; });
+      if (cs.length) speaker = cs[0];
+    }
+  } catch (e) {}
+  let speakerName = speaker ? String(speaker.name) : "Narrator";
+  let hasDirector = false;
+  try {
+    for (let c of hand) {
+      if (c && String(c.type) === "director") hasDirector = true;
+    }
+  } catch (e) {}
+  let staging = "";
+  if (hasDirector) {
+    try {
+      let dp = root.buildDirectorPrompt(hand, messages, summary, speakerName);
+      let dr = await root.generateText({ instruction: dp.instruction, startWith: dp.startWith, stopSequences: dp.stopSequences });
+      staging = String(dr && dr.text !== undefined ? dr.text : dr).trim();
+      if (staging.indexOf("Staging:") === 0) staging = staging.slice(8).trim();
+    } catch (e) {
+      staging = "";
+    }
+  }
+  let p = root.buildTablePrompt(hand, messages, summary, speaker, staging, "");
+  let res = await root.generateText({ instruction: p.instruction, startWith: p.startWith, stopSequences: p.stopSequences });
+  let f = root.readTableFinish(res, speakerName, p.stopSequences);
+  return { speaker: speakerName, speakerId: speaker ? speaker.id : null, text: f.text, thoughts: f.thoughts, staging: staging, stopReason: f.stopReason, clean: f.clean };
+
+// ---------------------------------------------------------------------------
+// Standard call plumbing: the OUT and AROUND of every generation.
+//
+// The standard call sends exactly { instruction, startWith, stopSequences }
+// plus an optional onChunk, and reads the finish through readFinish.
+// Stopping uses the retained handle; retry reuses its frozen inputs.
+// Call warmBackend once at app boot. Measuring uses estimate*Tokens and
+// getIdealMaxTokens (the getMetaObject shape), defined elsewhere here.
+// ---------------------------------------------------------------------------
+
+// Fire once at app boot. Warms the backend connection; returns nothing
+// useful and generates nothing. Safe to call again; harmless if so.
+warmBackend() =>
+  try {
+    if (root.__backendWarmed) return true;
+  } catch (e) {}
+  try {
+    root.__backendWarmed = true;
+  } catch (e) {}
+  try {
+    let r = root.generateText({ preload: true });
+    if (r && typeof r.catch === "function") r.catch(function () {});
+  } catch (e) {}
+  return true;
+
+// Read one finished generation. Reads .text (prefix included) and strips
+// the prefix with the normal render, so startWith experiments always flow
+// through the same path. Trailing stops are trimmed (the backend includes
+// the stop at the end). Never throws.
+readFinish(data, prefixInput, stopsInput) =>
+  let prefix = String(prefixInput || "");
+  let stops = stopsInput || [];
+  let raw = "";
+  try {
+    if (data && data.text !== undefined) raw = String(data.text);
+    else if (data !== undefined && data !== null) raw = String(data);
+  } catch (e) {}
+  let reason = "";
+  try {
+    reason = String((data && data.stopReason) || "");
+  } catch (e) {}
+  let text = raw.trim();
+  if (prefix && text.indexOf(prefix) === 0) text = text.slice(prefix.length).trim();
+  try {
+    for (let s of stops) {
+      let t = String(s || "").trim();
+      if (!t) continue;
+      let i = text.lastIndexOf(t);
+      if (i > 0 && i > text.length - t.length - 12) text = text.slice(0, i).trim();
+    }
+  } catch (e) {}
+  let clean = text !== "" && reason !== "user" && reason !== "error" && reason !== "interrupted";
+  return { text: text, stopReason: reason, clean: clean };
+
+// readFinish plus <think> splitting for staged speaker turns.
+readTableFinish(data, speakerNameInput, stopsInput) =>
+  let f = root.readFinish(data, String(speakerNameInput || "") + ":", stopsInput);
+  let text = f.text;
+  if (text.indexOf("<think>") === 0) text = text.slice(7).trim();
+  let thoughts = "";
+  let closeThink = text.indexOf("</think>");
+  if (closeThink >= 0) {
+    thoughts = text.slice(0, closeThink).trim();
+    text = text.slice(closeThink + 8).trim();
+  }
+  return { text: text, thoughts: thoughts, stopReason: f.stopReason, clean: f.clean && text !== "" };
+
+// Token counter, centralized: if the plugin changes its counter, only
+// this changes. Everything else calls countTokens, never the plugin shape.
+countTokens(text) =>
+  try {
+    let meta = root.generateText({ getMetaObject: true });
+    return Math.ceil(meta.countTokens(String(text || "")));
+  } catch (e) {
+    try {
+      return Math.ceil(String(text || "").length / 4);
+    } catch (e2) {
+      return 0;
+    }
+  }
+
+// Per-turn token totals, measured post-hoc on the real strings: prompt
+// (what was sent) + response (what came back) + total. Estimates predict
+// the prompt side; this replaces the prediction and adds the response
+// side, which is unknowable before the call. Never throws.
+measureTokens(instructionInput, textInput) =>
+  let a = 0;
+  let b = 0;
+  try {
+    a = root.countTokens(instructionInput);
+  } catch (e) {}
+  try {
+    b = root.countTokens(textInput);
+  } catch (e) {}
+  let t = a + b;
+  return { prompt: a, response: b, total: t };
+
+// Launch one generation and retain the handle. requestInput carries
+// instruction, startWith, stopSequences, and an optional onChunk.
+// parseInput maps finish data to the caller's shape. Returns
+// { promise, stop }: await promise for the parsed result, call stop to
+// abort early (resolves with the partial result).
+launchGeneration(requestInput, parseInput) =>
+  let req = requestInput || {};
+  let parse = parseInput;
+  if (typeof parse !== "function") parse = function (res) { return res; };
+  let handle = null;
+  try {
+    let opts = { instruction: req.instruction, startWith: req.startWith, stopSequences: req.stopSequences };
+    if (req.onChunk) opts.onChunk = req.onChunk;
+    handle = root.generateText(opts);
+  } catch (e) {}
+  let promise = Promise.resolve(handle).then(function (res) {
+    try {
+      return parse(res);
+    } catch (e) {
+      return res;
+    }
+  });
+  return {
+    promise: promise,
+    stop: function () {
+      try {
+        if (handle && handle.stop) handle.stop();
+      } catch (e) {}
+      return promise;
+    }
+  };
+
+// Retry from a retained handle's frozen inputs (same prompt, fresh roll).
+// parseInput maps finish data; defaults to the raw finish object.
+// Returns the launchGeneration shape, or null without a usable handle.
+retryGeneration(handleInput, parseInput) =>
+  let h = handleInput || null;
+  let inputs = null;
+  try {
+    inputs = h.inputs;
+  } catch (e) {}
+  if (!inputs) return null;
+  let parse = parseInput;
+  if (typeof parse !== "function") parse = function (res) { return res; };
+  return root.launchGeneration(
+    { instruction: inputs.instruction, startWith: inputs.startWith, stopSequences: inputs.stopSequences },
+    parse
+  );
+
+// Continue from retained text (interrupted or finished): same prompt, but
+// the kept text becomes the new startWith, so the model resumes instead of
+// restarting. Without retained text, falls back to a fresh retry.
+continueGeneration(handleInput, parseInput) =>
+  let h = handleInput || null;
+  let inputs = null;
+  try {
+    inputs = h.inputs;
+  } catch (e) {}
+  if (!inputs) return null;
+  let kept = "";
+  try {
+    kept = String((h && h.liveResponseText) || "");
+  } catch (e) {}
+  if (!kept) return root.retryGeneration(h, parseInput);
+  let parse = parseInput;
+  if (typeof parse !== "function") parse = function (res) { return res; };
+  return root.launchGeneration(
+    { instruction: inputs.instruction, startWith: kept, stopSequences: inputs.stopSequences },
+    parse
+  );
+
+// Standard launch for deck/single-character prompts. hooksInput is optional
+// ({ onChunk }). Resolves to { speaker, text, stopReason, clean }.
+startDeckReply(characterInput, messagesInput, summaryInput, cardsInput, hooksInput) =>
+  let character = characterInput || {};
+  let messages = messagesInput || [];
+  let summary = summaryInput || "";
+  let charName = String(character.name || "Aria");
+  let p = null;
+  try {
+    let cards = cardsInput || [];
+    if (cards.length) p = root.buildDeckPrompt(character, cards, messages, summary, "");
+    else p = root.buildChatPrompt(character, messages, summary, "");
+  } catch (e) {
+    p = null;
+  }
+  if (!p) {
+    return { promise: Promise.resolve({ speaker: charName, text: "", stopReason: "error", clean: false }), stop: function () {} };
+  }
+  let hooks = hooksInput || {};
+  return root.launchGeneration(
+    { instruction: p.instruction, startWith: p.startWith, stopSequences: p.stopSequences, onChunk: hooks.onChunk },
+    function (res) {
+      let f = root.readFinish(res, charName + ":", p.stopSequences);
+      return { speaker: charName, text: f.text, stopReason: f.stopReason, clean: f.clean, usage: root.measureTokens(p.instruction, f.text) };
+    }
+  );
+
+// Standard launch for table prompts, with the hidden staging pass when a
+// director is on the table. hooksInput is optional ({ onChunk }). Resolves
+// to { speaker, speakerId, text, thoughts, staging, stopReason, clean }.
+startTableReply(handInput, messagesInput, summaryInput, speakerIdInput, hooksInput) =>
+  let hooks = hooksInput || {};
+  let state = { handle: null, stopped: false };
+  let stop = function () {
+    state.stopped = true;
+    try {
+      if (state.handle && state.handle.stop) state.handle.stop();
+    } catch (e) {}
+  };
+  let promise = (async function () {
+    let hand = handInput || [];
+    let messages = messagesInput || [];
+    let summary = summaryInput || "";
+    let speaker = null;
+    try {
+      for (let c of hand) {
+        if (c && String(c.type) === "character" && String(c.id) === String(speakerIdInput)) speaker = c;
+      }
+      if (!speaker) {
+        let cs = hand.filter(function (c) { return c && String(c.type) === "character"; });
+        if (cs.length) speaker = cs[0];
+      }
+    } catch (e) {}
+    let speakerName = speaker ? String(speaker.name) : "Narrator";
+    let speakerId = speaker ? speaker.id : null;
+    let hasDirector = false;
+    try {
+      for (let c of hand) {
+        if (c && String(c.type) === "director") hasDirector = true;
+      }
+    } catch (e) {}
+    let staging = "";
+    if (hasDirector && !state.stopped) {
+      try {
+        let dp = root.buildDirectorPrompt(hand, messages, summary, speakerName);
+        let dr = await root.generateText({ instruction: dp.instruction, startWith: dp.startWith, stopSequences: dp.stopSequences });
+        staging = String(dr && dr.text !== undefined ? dr.text : dr).trim();
+        if (staging.indexOf("Staging:") === 0) staging = staging.slice(8).trim();
+      } catch (e) {
+        staging = "";
+      }
+    }
+    let p = root.buildTablePrompt(hand, messages, summary, speaker, staging, "");
+    if (state.stopped) {
+      return { speaker: speakerName, speakerId: speakerId, text: "", thoughts: "", staging: staging, stopReason: "user", clean: false };
+    }
+    let launched = root.launchGeneration(
+      { instruction: p.instruction, startWith: p.startWith, stopSequences: p.stopSequences, onChunk: hooks.onChunk },
+      function (res) {
+        let f = root.readTableFinish(res, speakerName, p.stopSequences);
+        return { speaker: speakerName, speakerId: speakerId, text: f.text, thoughts: f.thoughts, staging: staging, stopReason: f.stopReason, clean: f.clean, usage: root.measureTokens(p.instruction, f.text) };
+      }
+    );
+    state.handle = launched.handle;
+    return launched.promise;
+  })();
+  return { promise: promise, stop: stop };
+
+// Legacy single-character prompt. Kept byte-identical so existing behavior
+// and imports do not change. New code should use buildDeckPrompt.
+buildChatPrompt(characterInput, messagesInput, summaryInput, taskInput) =>
+  let character = characterInput || {};
+  let messages = messagesInput || [];
+  let summary = summaryInput || "";
+  let task = taskInput || "";
+  let charName = String(character.name || "Aria");
+  let userName = String(character.userName || root.chatDefaults.userName || "You");
+  let persona = String(character.persona || character.definition || "");
+  let scenario = "";
+  try {
+    scenario = String((character.specs && character.specs.scenario) || character.scenario || "");
+  } catch (e) {
+    scenario = "";
+  }
+  let exampleDialogue = "";
+  try {
+    exampleDialogue = String((character.specs && character.specs.exampleDialogue) || character.exampleDialogue || "");
+  } catch (e) {
+    exampleDialogue = "";
+  }
+  if (!task) {
+    task = "Write the next response as " + charName + ". Reply as " + charName + " only, one turn. Stay in character. Keep it vivid and concise, one to three short paragraphs. Never break character, never mention being an AI.";
+  }
+  let lines = [];
+  for (let m of messages) {
+    if (!m) continue;
+    let content = String(m.content !== undefined ? m.content : "").trim();
+    if (!content) continue;
+    if (m.role === "user") lines.push(userName + ": " + content);
+    else if (m.role === "system") lines.push("System note: " + content);
+    else lines.push(charName + ": " + content);
+  }
+  let parts = [];
+  parts.push("You are roleplaying as " + charName + ". Stay in character at all times. Treat the MESSAGES log as the full conversation so far.");
+  if (persona) parts.push("Persona: " + persona);
+  if (scenario) parts.push("Scenario: " + scenario);
+  if (exampleDialogue) parts.push("Example dialogue style: " + exampleDialogue);
+  parts.push("Rules: never break character. Never mention being an AI or a language model. Do not narrate for " + userName + " and do not write " + userName + " dialogue. Keep continuity with earlier messages.");
+  let head = parts.join("\n\n");
+  let summaryBlock = summary ? "Earlier chat summary, still true unless contradicted:\n" + summary : "";
+  let logText = lines.join("\n\n");
+  let instruction = head + "\n\n" + (summaryBlock ? summaryBlock + "\n\n" : "") + "MESSAGES\n" + logText + "\nEND MESSAGES\nTASK: " + task;
+  let startWith = charName + ":";
+  let stops = ["\n" + userName + ":", "\nUser:", "\nSystem note:"];
+  if (userName !== "You") stops.push("\nYou:");
+  return { instruction: instruction, startWith: startWith, stopSequences: stops };
+
+// Fast approximate token count for the current prompt. Synchronous.
+estimateChatTokens(characterInput, messagesInput, summaryInput) =>
+  let p = root.buildChatPrompt(characterInput, messagesInput, summaryInput, "Write the next response.");
+  return root.countTokens(p.instruction);
+
+// Token estimate for a full deck prompt. Synchronous.
+estimateDeckTokens(characterInput, cardsInput, messagesInput, summaryInput) =>
+  let p = root.buildDeckPrompt(characterInput, cardsInput, messagesInput, summaryInput, "Write the next response.");
+  return root.countTokens(p.instruction);
+
+// Ideal max context tokens recommended by the backend. Synchronous.
+getIdealMaxTokens() =>
+  try {
+    return root.generateText({ getMetaObject: true }).idealMaxContextTokens;
+  } catch (e) {
+    return 6000;
+  }
+
+// Usable payload ceiling: the advisory window minus headroom for the
+// reply, using chatDefaults summaryTriggerRatio as the fill ratio.
+budgetTokens() =>
+  let ratio = 0.9;
+  try {
+    let r = Number(root.chatDefaults.summaryTriggerRatio);
+    if (r > 0 && r < 1) ratio = r;
+  } catch (e) {}
+  try {
+    return Math.floor(root.getIdealMaxTokens() * ratio);
+  } catch (e) {
+    return 5400;
+  }
+
+// Convenience one-shot reply for importers. Returns the reply TEXT without
+// the leading Name prefix and without any trailing stop sequence.
+// Pass equipped cards as the optional fourth argument to use the deck.
+// For streaming plus a stop button, importers should call buildDeckPrompt
+// and then root.generateText themselves with onChunk.
+async getChatReply(characterInput, messagesInput, summaryInput, cardsInput) =>
+  let character = characterInput || {};
+  let charName = String(character.name || "Aria");
+  let p = null;
+  if (cardsInput && cardsInput.length) {
+    p = root.buildDeckPrompt(character, cardsInput, messagesInput, summaryInput, "");
+  } else {
+    p = root.buildChatPrompt(character, messagesInput, summaryInput, "");
+  }
+  let res = await root.generateText({ instruction: p.instruction, startWith: p.startWith, stopSequences: p.stopSequences });
+  return root.readFinish(res, charName + ":", p.stopSequences).text;
+
+// Fold the oldest messages into a rolling summary. Keeps the newest keepTail
+// messages verbatim. Called rarely, in the background, so the one cache miss
+// it causes is amortized over many fast cache-hit replies.
+async summarizeOldMessages(characterInput, summaryInput, messagesInput, keepTailInput) =>
+  let character = characterInput || {};
+  let oldSummary = summaryInput || "";
+  let messages = messagesInput || [];
+  let keepTail = keepTailInput;
+  if (keepTail === undefined || keepTail === null) keepTail = 12;
+  try {
+    let kd = root.chatDefaults.keepTail;
+    if ((keepTail === 12 || !keepTail) && kd) keepTail = Number(kd);
+  } catch (e) {}
+  if (messages.length <= keepTail) return oldSummary;
+  let n = messages.length - keepTail;
+  let oldest = messages.slice(0, n);
+  let lines = oldest.map(function (m) {
+    if (m.role === "user") return "User: " + m.content;
+    if (m.role === "system") return "System note: " + m.content;
+    return String(character.name || "Aria") + ": " + m.content;
+  });
+  let boundary = String(oldest[oldest.length - 1].content || "").slice(-40);
+  let task = "Summarize the first " + n + " messages of this conversation into terse bullets. Fold in the earlier chat summary if one exists. Preserve names, facts, decisions, relationships, and unresolved threads. Output ONLY the new summary text, no preamble. Stop after the message ending with: " + boundary;
+  let p = root.buildChatPrompt(character, messages, oldSummary, task);
+  let res = await root.generateText({ instruction: p.instruction, startWith: "Summary:", stopSequences: [] });
+  let text = String(res && res.generatedText !== undefined ? res.generatedText : res);
+  text = text.trim();
+  if (text.indexOf("Summary:") === 0) text = text.slice(8).trim();
+  return text;
+
+// Backwards-compatible aliases for pre-card imports.
+getCharacterList() =>
+  let out = [];
+  try {
+    for (let c of root.getStarterCards()) {
+      if (String(c.type) !== "character") continue;
+      let def = String(c.definition || "");
+      let snippet = def.length > 80 ? def.slice(0, def.lastIndexOf(" ", 80)) + "..." : def;
+      out.push({
+        id: c.id,
+        name: c.name,
+        tagline: snippet,
+        avatarEmoji: "",
+        avatarUrl: String(c.image || ""),
+        greeting: String((c.specs && (c.specs.first_message || c.specs.greeting)) || ""),
+        persona: def,
+        scenario: String((c.specs && c.specs.scenario) || ""),
+        exampleDialogue: String((c.specs && c.specs.exampleDialogue) || ""),
+        avatarPrompt: String((c.specs && c.specs.avatarPrompt) || "")
+      });
+    }
+  } catch (e) {}
+  return out;
+
+getCharacterById(id) =>
+  let list = root.getCharacterList();
+  let key = String(id);
+  for (let c of list) {
+    if (c.id === key || c.name === key) return c;
+  }
+  return null;

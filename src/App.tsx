@@ -22,7 +22,6 @@ import type { Card, CardType, CardTypeField } from "./types/card.ts";
 import { CARD_TYPE_REGISTRY } from "./types/card.ts";
 import { BoardSlot } from "./components/cards/BoardSlot.tsx";
 import { CardModal } from "./components/cards/CardModal.tsx";
-import { countBracketKeys } from "./engine/brackets.ts";
 import type { Msg } from "./engine/prompts.ts";
 import { splitThink, stripReply } from "./engine/prompts.ts";
 import {
@@ -147,10 +146,6 @@ const CLOSED_DRAFT: EditorDraft = {
   equip: true,
   avatarBusy: false,
 };
-
-function bracketTypes(t: CardType): boolean {
-  return t === "character" || t === "location" || t === "challenge" || t === "rule";
-}
 
 export function App() {
   const stateRef = useRef<PersistState | null>(null);
@@ -872,7 +867,7 @@ export function App() {
         {/* click-outside closes the binder */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 z-5"
+            className="absolute inset-0 z-[5]"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -1200,7 +1195,7 @@ export function App() {
                     title="Stop generating"
                     aria-label="Stop"
                     onClick={stopGen}
-                    className="flex h-11 w-22 flex-none items-center justify-center bg-danger text-void font-bold"
+                    className="flex h-11 w-[88px] flex-none items-center justify-center bg-danger text-void font-bold"
                   >
                     ■
                   </button>
@@ -1357,23 +1352,25 @@ export function App() {
                 </div>
               </div>
               {regFields.map((f: CardTypeField) =>
-                f.key === "enforcement" ? (
+                f.control === "select" && f.options && f.options.length ? (
                   <label key={f.key} className="block">
                     <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
                       {f.label}
                     </span>
                     <select
-                      value={draft.specs[f.key] === "guideline" ? "guideline" : "strict"}
+                      value={draft.specs[f.key] || f.defaultValue || f.options[0] || ""}
+                      disabled={!!f.readonly}
                       onChange={(e) =>
                         setDraft((d) => ({
                           ...d,
                           specs: { ...d.specs, [f.key]: e.target.value },
                         }))
                       }
-                      className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
+                      className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none disabled:opacity-60"
                     >
-                      <option value="strict">strict</option>
-                      <option value="guideline">guideline</option>
+                      {(f.options || []).map((o) => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
                     </select>
                   </label>
                 ) : (
@@ -1385,107 +1382,33 @@ export function App() {
                       <textarea
                         value={draft.specs[f.key] || ""}
                         placeholder={f.placeholder}
+                        disabled={!!f.readonly}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,
                             specs: { ...d.specs, [f.key]: e.target.value },
                           }))
                         }
-                        className="min-h-17.5 w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
+                        className="min-h-17.5 w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none disabled:opacity-60"
                       />
                     ) : (
                       <input
                         value={draft.specs[f.key] || ""}
                         placeholder={f.placeholder}
+                        disabled={!!f.readonly}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,
                             specs: { ...d.specs, [f.key]: e.target.value },
                           }))
                         }
-                        className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
+                        className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none disabled:opacity-60"
                       />
                     )}
                   </label>
                 ),
               )}
-              {bracketTypes(draft.cardType) && (
-                <>
-                  {(
-                    [
-                      {
-                        key: "public_state",
-                        label: "Public state — KEY: value lines, visible to all",
-                      },
-                      {
-                        key: "private_state",
-                        label: "Private state — KEY: value lines, hidden from others",
-                      },
-                    ] as const
-                  ).map((b) => {
-                    const n = countBracketKeys(draft.specs[b.key] || "");
-                    return (
-                      <label key={b.key} className="block">
-                        <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
-                          {b.label}
-                        </span>
-                        <textarea
-                          value={draft.specs[b.key] || ""}
-                          placeholder={"MOOD: curious\nGOAL: learn your name"}
-                          onChange={(e) =>
-                            setDraft((d) => ({
-                              ...d,
-                              specs: { ...d.specs, [b.key]: e.target.value },
-                            }))
-                          }
-                          className="min-h-17.5 w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 font-mono text-xs text-frisk focus:border-cyan focus:outline-none"
-                        />
-                        <div className="mt-0.5 font-mono text-[11px] text-frozen">
-                          {n
-                            ? `${n}${n === 1 ? " key" : " keys"}${b.key === "public_state" ? " • visible to all" : " • hidden from others"}`
-                            : "empty"}
-                        </div>
-                      </label>
-                    );
-                  })}
-                </>
-              )}
-              {draft.cardType === "character" && (
-                <label className="block">
-                  <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
-                    Voice preset (optional)
-                  </span>
-                  <input
-                    value={draft.specs["voice_preset"] || ""}
-                    placeholder="e.g. warm, dry wit"
-                    onChange={(e) =>
-                      setDraft((d) => ({
-                        ...d,
-                        specs: { ...d.specs, voice_preset: e.target.value },
-                      }))
-                    }
-                    className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
-                  />
-                </label>
-              )}
-              {draft.cardType === "location" && (
-                <label className="block">
-                  <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
-                    Visual anchor (optional)
-                  </span>
-                  <input
-                    value={draft.specs["visual_anchor"] || ""}
-                    placeholder="e.g. golden dock at dusk"
-                    onChange={(e) =>
-                      setDraft((d) => ({
-                        ...d,
-                        specs: { ...d.specs, visual_anchor: e.target.value },
-                      }))
-                    }
-                    className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
-                  />
-                </label>
-              )}
+              {/* state/voice/visual editors removed with the state molecules */}
               <label className="flex items-center gap-2 text-sm text-frisk">
                 <input
                   type="checkbox"
