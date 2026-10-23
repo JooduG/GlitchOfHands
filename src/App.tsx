@@ -548,13 +548,12 @@ export function App() {
   }
 
   function editorSub(): string {
-    if (!draft.cardId)
-      return "Pick a type to unlock its fields. Plain words only — avoid square and curly brackets.";
+    if (!draft.cardId) return "Pick a type to unlock its fields.";
     const c = getCard(S(), draft.cardId);
     const builtin = !!(c && S().starters.some((x) => x.id === c.id));
     return builtin
       ? "This is a starter card. Saving creates your own editable copy. Deleting hides it — Reset brings starters back."
-      : "Pick a type to unlock its fields. Plain words only — avoid square and curly brackets.";
+      : "Pick a type to unlock its fields.";
   }
 
   async function saveEditor() {
@@ -573,14 +572,6 @@ export function App() {
     if (!definition) {
       toast("Write a definition — the core prose of the card.");
       return;
-    }
-    const bad = /[[ \]{}^]/;
-    const check = [definition, name, ...Object.values(draft.specs)];
-    for (const v of check) {
-      if (bad.test(v)) {
-        toast("Avoid [ ] { } ^ in card text.");
-        return;
-      }
     }
     const existing = draft.cardId ? getCard(s, draft.cardId) : null;
     const existingBuiltin = !!(existing && s.starters.some((x) => x.id === existing.id));
