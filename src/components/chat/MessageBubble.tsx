@@ -72,7 +72,7 @@ export function MessageBubble({ message, onDelete }: MessageBubbleProps) {
 
         {/* Main Prose Bubble */}
         <div
-          className={`rounded-2xl px-4 py-3 text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap break-words shadow-lg ${
+          className={`rounded-2xl px-4 py-3 text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap wrap-break-word shadow-lg ${
             isUser
               ? "bg-emerald text-void rounded-br-sm shadow-[0_0_12px_rgba(16,185,129,0.2)] font-normal"
               : "bg-gunmetal/50 text-frisk border border-frisk/10 rounded-bl-sm backdrop-blur-md shadow-[0_8px_32px_rgba(5,6,10,0.5)]"

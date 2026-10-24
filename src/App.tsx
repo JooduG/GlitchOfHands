@@ -611,6 +611,52 @@ export function App() {
       stopSequences: wired,
     };
   }
+  // List-owned labels for the lab's caller-input boxes. The prompt organism
+  // declares these parts (task has no content: the caller supplies the
+  // value); the lab renders from the list, with static fallbacks for dev.
+  function labPartMeta(key: string): { label: string; placeholder: string; help: string } {
+    const fb: Record<string, { label: string; placeholder: string; help: string }> = {
+      task: {
+        label: "Task",
+        placeholder: "Say hello in character, one short line.",
+        help: "Caller input for one generation.",
+      },
+    };
+    try {
+      const r = labRoot();
+      const p = r && r.card && r.card.organisms && r.card.organisms.prompt && r.card.organisms.prompt.parts && r.card.organisms.prompt.parts[key];
+      if (p) {
+        const d = (fb[key] || { label: key, placeholder: "", help: "" }) as {
+          label: string;
+          placeholder: string;
+          help: string;
+        };
+        return {
+          label: String(p.label || d.label),
+          placeholder: String(p.placeholder || d.placeholder),
+          help: String(p.help || d.help),
+        };
+      }
+    } catch {
+      /* fall through to static fallback */
+    }
+    return fb[key] || { label: key, placeholder: "", help: "" };
+  }
+  // The wired stops, straight from the stopSequences part content — so the
+  // extras box can name what is already applied without duplicating it.
+  function labWiredStops(): string[] {
+    try {
+      const r = labRoot();
+      const raw =
+        r && r.card && r.card.organisms && r.card.organisms.prompt && r.card.organisms.prompt.parts && r.card.organisms.prompt.parts.stopSequences
+          ? String(r.card.organisms.prompt.parts.stopSequences.content || "")
+          : "";
+      if (raw) return raw.split("~~~").map((s) => String(s).trim()).filter((s) => !!s);
+    } catch {
+      /* fall through to static fallback */
+    }
+    return ["You:", "User:", "System note:"];
+  }
   function openLab() {
     // Preselect the first character so the slot starts filled.
     try {
@@ -1061,6 +1107,8 @@ export function App() {
 
   const labChars: Card[] = ready ? allCards(S()).filter((c) => c.type === "character") : [];
   const labPrompt = labOpen ? labAssemble() : null;
+  const labTaskMeta = labPartMeta("task");
+  const labWired = labWiredStops();
   const labSlotHint = (() => {
     try {
       const r = labRoot();
@@ -1089,7 +1137,7 @@ export function App() {
         {/* click-outside closes the binder */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 z-[5]"
+            className="absolute inset-0 z-5"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -1418,7 +1466,7 @@ export function App() {
                     title="Stop generating"
                     aria-label="Stop"
                     onClick={stopGen}
-                    className="flex h-11 w-[88px] flex-none items-center justify-center bg-danger text-void font-bold"
+                    className="flex h-11 w-22 flex-none items-center justify-center bg-danger text-void font-bold"
                   >
                     ■
                   </button>
@@ -1724,25 +1772,29 @@ export function App() {
               </label>
               <label className="block">
                 <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
-                  Task (appended as TASK block, optional)
+                  {labTaskMeta.label} (appended as TASK block, optional)
                 </span>
                 <textarea
                   value={labTask}
                   onChange={(e) => setLabTask(e.target.value)}
                   rows={2}
-                  placeholder="Say hello in character, one short line."
+                  placeholder={labTaskMeta.placeholder}
+                  title={labTaskMeta.help}
                   className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 text-sm text-frisk focus:border-cyan focus:outline-none"
                 />
               </label>
               <label className="block">
                 <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">
-                  Stop sequences (one per line, optional)
+                  Extra stops (one per line, optional)
                 </span>
+                <div className="mb-1 font-mono text-[10px] text-frozen">
+                  Wired from the list: {labWired.join(" · ")} — add only extras here.
+                </div>
                 <textarea
                   value={labStopsText}
                   onChange={(e) => setLabStopsText(e.target.value)}
                   rows={2}
-                  placeholder="e.g. You:"
+                  placeholder="e.g. Kael:"
                   className="w-full rounded-lg border border-gunmetal bg-void/60 px-3 py-2 font-mono text-xs text-frisk focus:border-cyan focus:outline-none"
                 />
               </label>

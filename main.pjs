@@ -113,7 +113,7 @@ card
           atom = textfield
           readonly = true
           help = Prompt only. The full instruction for one generation. ~~~ marks a paragraph break.
-          content = # Roleplay ~~~ speaker.output ~~~ **Rule:** Use exclusively affirmative language.
+          content = # Identity ~~~ speaker.output ~~~ **Rule:** Use exclusively affirmative language.
         startWith
           label = Start with
           atom = textline
@@ -126,6 +126,11 @@ card
           placeholder = One stop sequence per line
           help = Prompt only. Wired stops, split on ~~~ — caller extras are appended.
           content = You: ~~~ User: ~~~ System note:
+        task
+          label = Task
+          atom = textfield
+          placeholder = Say hello in character, one short line.
+          help = Prompt only. Caller input for one generation. Appended as a TASK block.
     character
       label = Character
       description = A speaking role. Name, definition, and first message.
