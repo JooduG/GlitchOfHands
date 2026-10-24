@@ -10,7 +10,7 @@ export type MessageRole = "user" | "char" | "system";
 export interface ChatMessage {
   id: string;
   role: MessageRole;
-  content: string; // May include <think>...</think>
+  content: string; // May include a ### Thoughts section ahead of ### Reply
   authorId?: string | null;
   authorName?: string;
   timestamp?: number;
@@ -28,10 +28,19 @@ export interface ParsedThoughts {
 }
 
 /**
- * Splits `<think>...</think>` tags out of raw AI text.
+ * Splits staged thoughts out of raw AI text. New replies use `### Thoughts`
+ * ahead of `### Reply`; legacy `<think>...</think>` still splits.
  */
 export function parseThoughts(content: string): ParsedThoughts {
   const text = String(content || "");
+  const replyTag = "### Reply";
+  const ri = text.indexOf(replyTag);
+  if (ri >= 0) {
+    let head = text.slice(0, ri).trim();
+    const thoughtsTag = "### Thoughts";
+    if (head.indexOf(thoughtsTag) === 0) head = head.slice(thoughtsTag.length).trim();
+    return { thoughts: head, visible: text.slice(ri + replyTag.length).trim() };
+  }
   const i = text.indexOf("<think>");
   const j = text.indexOf("</think>");
   if (i >= 0 && j > i) {

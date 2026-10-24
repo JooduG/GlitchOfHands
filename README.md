@@ -44,7 +44,7 @@ Defined once in `getCardTypes()` — the single source of truth:
 - **`scenario`**: Situation, setup, or background context.
 - **`location`**: Place and sensory anchor.
 - **`challenge`**: Objectives and countdowns.
-- **`director`**: Invisible puppeteer. Triggers 2-shot staging passes (`<think>` seeding).
+- **`director`**: Invisible puppeteer. Triggers 2-shot staging passes (`### Thoughts` / `### Reply` seeding).
 - **`style`**: Prose voice and literary cadence.
 - **`rule`**: Hard constraints. Unlocks `enforcement` dropdown (`strict` | `guideline`, default `strict`).
 
@@ -62,7 +62,7 @@ guideline, not an absolute."
 - **1 card on table**: Classic instant 1-on-1 chat.
 - **2 cards (Character + Persona)**: Defined RPG (persona names the player in the transcript).
 - **2+ Characters**: Group chat with rotating speaker turns (`thread.turn`) and Banter ("improvise without me").
-- **Director Card on Table**: Switches turns to 2-shot: a hidden staging call seeds the speaker's `<think>` block, rendered as a collapsible thought stream.
+- **Director Card on Table**: Switches turns to 2-shot: a hidden staging call seeds the speaker's `### Thoughts` section ahead of `### Reply`, rendered as a collapsible thought stream.
 
 ---
 
@@ -100,8 +100,15 @@ Then use `root.chatPlugin.*`:
   → `{instruction, startWith, stopSequences}` for one speaker turn at a table of
   1–6 cards. `speaker` is a character card (or `null` for narrator). Other
   characters render as `OTHER CHARACTER` sections. When
-  `directorNotes` is non-empty the speaker must open with a `<think>` block and
-  `startWith` forces it.
+  `directorNotes` is non-empty the speaker must open with a `### Thoughts`
+  section ahead of `### Reply` and `startWith` forces it.
+- `root.chatPlugin.assemblePromptCard(slots, task, stops)` → `{instruction,
+  startWith, stopSequences}` for one prompt-organism generation. `slots`
+  maps slot names to cards (`speaker` accepts character). Stops are wired
+  from the `stopSequences` part content (split on `~~~`, one stop each)
+  with caller `stops` appended.
+- `await root.chatPlugin.runPromptCard(slots, task, stops)` → the
+  `readFinish` shape `{text, stopReason, clean}` for the assembled envelope.
 - `root.chatPlugin.buildDirectorPrompt(hand, messages, summary, nextSpeakerName)`
   → the hidden staging pass. Sees every card in full.
 - `await root.chatPlugin.getTableReply(hand, messages, summary, speakerId?)` →
@@ -157,7 +164,7 @@ Notes:
   `thread.turn`, each message stores `authorId`/`authorName`, and Banter advances
   the scene without user input. No character = the Narrator speaks.
 - Director card on the table switches turns to 2-shot: a hidden staging call
-  (`buildDirectorPrompt`, sees all privates) seeds the speaker's `<think>` block,
+  (`buildDirectorPrompt`, sees all privates) seeds the speaker's `### Thoughts` section,
   rendered as a collapsible "thoughts" section. No director = fast 1-shot.
 - Table section at the top of the sidebar shows the hand + mode (⚡/🎬) with
   Banter (primary-styled); Shuffle and Clear live in the Menu below. Sidebar

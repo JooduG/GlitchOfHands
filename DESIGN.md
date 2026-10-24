@@ -340,7 +340,7 @@ button.text-lg { font-size: var(--text-lg); line-height: var(--tw-leading, var(-
   cost (`~199 / 6k`), not a dashboard — detail hides in tooltips. When the
   table is empty it earns its place differently (`9 cards in the library`)
   instead of repeating the peer box.
-- **Staging disclosure**: `<think>` thoughts collapse by default (process
+- **Staging disclosure**: `### Thoughts` thoughts collapse by default (process
   is backstage); the 🎬 mode line signals 2-shot nights like house lights.
 - **Signature color (next)**: one persistent hue per entity across slots,
   badges, and labels — rpglitch's signature registry, adopted for cast

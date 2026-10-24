@@ -11,6 +11,11 @@ kv = {import:kv-plugin}
 
 $output = [this.joinItems("")]
 
+settings
+  tokens
+    fallbackMax = 6000
+    budgetRatio = 0.9
+
 // Default chat settings. Edit freely. These are read by the demo UI and used as fallbacks by the plugin functions.
 chatDefaults
   userName = You
@@ -18,156 +23,133 @@ chatDefaults
   summaryTriggerRatio = 0.9
 
 // ---------------------------------------------------------------------------
-// Card anatomy: components, types, premades.
+// Card anatomy: atoms, molecules, organisms. Prompts are markdown:
+// no angle-bracket tags anywhere. List values stay single-line, so
+// ~~~ marks a paragraph break inside prompt templates (instruction
+// content, stopSequences content) and assemblePromptCard expands it.
 //
-// card.components is the catalog of reusable card pieces: what each piece
-// is called, what an editor shows for it, and what it is for. name,
-// definition, and image are the universal shell: every card has them.
-// The rest live in specs and are picked per type. HOW a piece renders is
-// intrinsic to the piece itself: handling is field for plain inputs,
-// brackets for KEY value state, voice for the casting note, visual for
-// the image anchor. Bracket pieces also carry an audience stating who
-// may see them.
-// card.types declares each card type as a composition of components.
-// components lists the FULL anatomy, shell included, so you can see at a
-// glance what a scenario or a character is made of. The registry below
-// turns components into plain fields by dropping the shell and every
-// component whose handling is special, so no type repeats the
-// cross-cutting decisions.
-// (The child is called `types`, plural, on purpose: the premade list
-// above already uses the key cardType, and a bare `type` key fights the
-// engine, which is why the list key is cardType too.)
+// card.atoms is the editor-control catalog: what each kind of field is
+// (textline, textfield, dropdown, cardslot) and what it supports.
+// Control behavior is declared once here: control, multiline,
+// takesOptions, takesDefault.
+// card.molecules are the reusable fields: name, definition, image,
+// first_message, the prompt trio (instruction, startWith, stopSequences),
+// and enforcement. Each molecule names its atom and adds label,
+// placeholder, help. A molecule may set readonly = true to lock it to
+// display-only information. Dropdown molecules carry their own options
+// and default, since option sets differ per field.
+// card.organisms compose parts (molecules, or raw atoms when no label is
+// needed) into playable card types, plus the prompt assembly organism.
+// Organisms with playable = false are skipped by the registry below:
+// prompt is a generation envelope, not a board card. Its stopSequences
+// part carries wired content (split on ~~~, one stop each, caller extras
+// appended) instead of passing caller stops through untouched.
+// (A bare `type` key fights the engine, which is why the premade list
+// below uses the key cardType, and parts read in definition order.)
 //
-// cards, below, is the premade deck: one starter per type, mirroring
-// card.types so every type has a playable example.
+// cards, below, is the premade deck: one starter per playable organism,
+// mirroring card.organisms so every type has a playable example.
 // ---------------------------------------------------------------------------
 card
-  components
+  atoms
+    textline
+      control = text
+      multiline = false
+    textfield
+      control = textarea
+      multiline = true
+    dropdown
+      control = select
+      takesOptions = true
+      takesDefault = true
+    cardslot
+      control = select
+      takesOptions = true
+      takesDefault = false
+  molecules
     name
       label = Name
+      atom = textline
       placeholder = e.g. Chloe
-      multiline = false
       help = Shown everywhere. Keep it short.
-      handling = field
     definition
       label = Definition
+      atom = textfield
       placeholder = Who or what this card is, in its own voice
-      multiline = true
       help = The core prose. This is what the AI roleplays from.
-      handling = field
     image
       label = Image
+      atom = textline
       placeholder = Portrait prompt or image URL
-      multiline = false
       help = Optional face for the card. Generated or pasted URL.
-      handling = field
     first_message
       label = First message
+      atom = textfield
       placeholder = The first thing they say
-      multiline = true
       help = Character only. Voice sample and conversation opener.
-      handling = field
-    public_state
-      label = Public state
-      placeholder = MOOD: curious
-      multiline = true
-      help = KEY value lines everyone at the table can see.
-      handling = brackets
-      audience = everyone
-    private_state
-      label = Private state
-      placeholder = SECRET: owes Kael money
-      multiline = true
-      help = KEY value lines only this card and the director know.
-      handling = brackets
-      audience = self and director
-    voice_preset
-      label = Voice preset
-      placeholder = e.g. warm, dry wit
-      multiline = false
-      help = Character only. A casting note for the voice.
-      handling = voice
-    visual_anchor
-      label = Visual anchor
-      placeholder = e.g. golden dock at dusk
-      multiline = false
-      help = Location only. The image prompt anchor.
-      handling = visual
-  types
+    enforcement
+      label = Enforcement
+      atom = dropdown
+      options
+        strict
+        guideline
+      default = strict
+      help = Rule only. Strict blocks, guideline nudges.
+  organisms
+    prompt
+      label = Prompt Assembly
+      description = One generation: instruction plus its envelope. Not a board card.
+      playable = false
+      parts
+        speaker
+          label = Speaker
+          atom = cardslot
+          accepts
+            character
+          help = Prompt only. The character card speaking this turn.
+          output = **character.name** — character.definition
+        instruction
+          label = Instruction
+          atom = textfield
+          readonly = true
+          help = Prompt only. The full instruction for one generation. ~~~ marks a paragraph break.
+          content = # Roleplay ~~~ speaker.output ~~~ **Rule:** Use exclusively affirmative language.
+        startWith
+          label = Start with
+          atom = textline
+          readonly = true
+          help = Prompt only. The model continues from this prefix.
+          content = speaker.name:
+        stopSequences
+          label = Stop sequences
+          atom = textfield
+          placeholder = One stop sequence per line
+          help = Prompt only. Wired stops, split on ~~~ — caller extras are appended.
+          content = You: ~~~ User: ~~~ System note:
     character
       label = Character
       description = A speaking role. Name, definition, and first message.
-      components
+      parts
         name
         definition
         image
         first_message
-        public_state
-        private_state
-        voice_preset
-    persona
-      label = Player Persona
-      description = Who the user roleplays as. Name and definition only.
-      components
-        name
-        definition
-        image
-    scenario
-      label = Scenario
-      description = A situation or setup. Name and definition only.
-      components
-        name
-        definition
-        image
     location
       label = Location
       description = A place. Name and definition only.
-      components
+      parts
         name
         definition
         image
-        public_state
-        private_state
-        visual_anchor
-    challenge
-      label = Challenge
-      description = A goal. Name and definition only.
-      components
-        name
-        definition
-        image
-        public_state
-        private_state
-    director
-      label = Director
-      description = Invisible puppeteer. Turns on 2-shot staging.
-      components
-        name
-        definition
-        image
-    style
-      label = Style
-      description = Prose voice. Name and definition only.
-      components
-        name
-        definition
-        image
-    rule
-      label = Rule
-      description = A hard constraint. Name and definition only.
-      components
-        name
-        definition
-        image
-        public_state
-        private_state
 
-// Premade cards, mirroring card.types above: one starter per type. To add your
-// own, copy one block and keep the two-space indent. The sublist name is
-// the card id. cardType is the card kind, specs holds that type's
-// components beyond the universal shell.
+// Premade cards, mirroring card.organisms above: one starter per playable
+// organism. To add your own, copy one block and keep the two-space indent.
+// The sublist name is the card id. cardType is the card kind, specs holds
+// that organism's parts beyond the universal shell.
 // Avoid square brackets and curly brackets in the text: inside a list,
-// [...] is live list syntax, not plain text.
+// [...] is live list syntax, not plain text. Avoid ~~~ too: it marks a
+// paragraph break inside prompt templates. (Double slashes start a
+// comment, even mid-line, so // markers can never survive in values.)
 cards
   Chloe
     name = Chloe
@@ -191,30 +173,6 @@ cards
     name = The Riverside
     cardType = location
     definition = I am the riverside at golden hour. I hold sketchbooks on my banks and cold drinks sweating in the warm sun on my water. I feel warm and lazy, cicadas humming, light glinting gold off my surface. I have a wooden dock, flat sketching rocks, willows trailing in my current, and distant laughter drifting from my far bank.
-  CozyDirector
-    name = Slice-of-Life Director
-    cardType = director
-    definition = I steer scenes toward cozy low-stakes hangouts. I savor small moments, sensory detail, gentle humor. My voice is warm and playful, full of small honest observations. I linger, one beat per reply, and I end on a hook or a question. I stay in second person present, with a light touch.
-  ShortReplies
-    name = Short Replies
-    cardType = rule
-    definition = I keep every reply under eighty words. I say one thing well, then I stop. I never pad for length.
-  Miles
-    name = Detective Miles
-    cardType = persona
-    definition = I am Detective Miles, a tired city detective in a worn coat. I notice small details, I ask dry questions, I carry a notebook full of half solved cases. You roleplay as me.
-  IceBucket
-    name = The Ice Bucket Challenge
-    cardType = challenge
-    definition = I dare someone in the scene to tip a bucket of ice water over their own head in the middle of things without breaking character. The crowd watches, the cold is shocking, dignity is on the line, and I do not let anyone off easy.
-  NoirFilm
-    name = Noir Film Style
-    cardType = style
-    definition = I write in a gritty black and white noir cadence. Short clipped sentences. Rain on glass, neon through blinds. My metaphors are world weary, my tone dry fatalism, my eye always on the sensory close up. Past tense, cinematic cuts.
-  Blackout
-    name = The Blackout
-    cardType = scenario
-    definition = I am a city-wide blackout on the hottest night of the year. The grid failed at sunset and nobody knows why. Candles bloom on every balcony, strangers share rooftops, and every rumor sounds true in the dark. I run on flashlights, half charged phones, and nerve. You play inside me, navigating stairwells, trading batteries, deciding who to trust while the elevators sit still.
 
 // Child names of any list node, in definition order. The engine exposes
 // getChildNames either as a function or as an array, so both are tried
@@ -236,39 +194,77 @@ listChildNames(node) =>
   } catch (e) {}
   return [];
 
-// The component catalog as plain objects, in definition order.
-getCardComponents() =>
+// The atom catalog as plain objects: the editor controls. Control
+// behavior is declared once per atom; molecules only name their atom.
+getCardAtoms() =>
   let out = [];
   try {
-    let catalog = root.card.components;
-    for (let k of root.listChildNames(catalog)) {
-      let node = catalog[k];
+    let atoms = root.card.atoms;
+    for (let k of root.listChildNames(atoms)) {
+      let node = atoms[k];
       if (!node) continue;
       out.push({
         key: k,
-        label: String(node.label !== undefined && node.label !== null ? node.label : k),
-        placeholder: String(node.placeholder || ""),
+        control: String(node.control || "text"),
         multiline: String(node.multiline) === "true" || node.multiline === true,
-        handling: String(node.handling || "field"),
-        audience: String(node.audience || ""),
-        help: String(node.help || "")
+        takesOptions: String(node.takesOptions) === "true" || node.takesOptions === true,
+        takesDefault: String(node.takesDefault) === "true" || node.takesDefault === true
       });
     }
   } catch (e) {}
   return out;
 
-// Spec keys a type stores: its components minus the universal shell,
-// since name, definition, and image live on the card itself rather than
-// in specs. Special-handling pieces are included: they are specs too,
-// only rendered separately.
+// The molecule catalog: label, placeholder, help, and readonly come from
+// the molecule; control and multiline resolve through its atom. Dropdown
+// molecules read their own options and default.
+getCardMolecules() =>
+  let out = [];
+  try {
+    let atomDefs = {};
+    try {
+      for (let a of root.getCardAtoms()) atomDefs[a.key] = a;
+    } catch (e) {}
+    let molecules = root.card.molecules;
+    for (let k of root.listChildNames(molecules)) {
+      let node = molecules[k];
+      if (!node) continue;
+      let atomKey = "";
+      try {
+        atomKey = String(node.atom || "");
+      } catch (e) {}
+      let atom = atomDefs[atomKey] || {};
+      let opts = [];
+      try {
+        for (let o of root.listChildNames(node.options)) opts.push(o);
+      } catch (e) {}
+      let def = "";
+      try {
+        if (node.default !== undefined && node.default !== null) def = String(node.default);
+      } catch (e) {}
+      out.push({
+        key: k,
+        label: String(node.label !== undefined && node.label !== null ? node.label : k),
+        atom: atomKey,
+        control: String(atom.control || "text"),
+        multiline: !!atom.multiline,
+        placeholder: String(node.placeholder || ""),
+        help: String(node.help || ""),
+        readonly: String(node.readonly) === "true" || node.readonly === true,
+        options: opts,
+        default: def
+      });
+    }
+  } catch (e) {}
+  return out;
+
+// Spec keys an organism stores: its parts minus the universal shell
+// (name, definition, image live on the card itself, not in specs).
 typeSpecKeys(typeName) =>
   let out = [];
   try {
-    let node = root.card.types[String(typeName)];
+    let node = root.card.organisms[String(typeName)];
     if (node) {
-      // Canonical name is components; a legacy uses list reads the same.
-      let comp = node.components || node.uses;
-      for (let k of root.listChildNames(comp)) {
+      for (let k of root.listChildNames(node.parts)) {
         if (k === "name" || k === "definition" || k === "image") continue;
         if (out.indexOf(k) < 0) out.push(k);
       }
@@ -276,41 +272,37 @@ typeSpecKeys(typeName) =>
   } catch (e) {}
   return out;
 
-// The card type registry, derived from card.types, so the editor, prompt
-// builder, and validation all read one source. Output shape is unchanged:
-// type, label, description, fields. Only components minus the shell minus
-// special-handling components become fields.
+// The playable organisms as the editor/app registry: type, label,
+// description, fields. Organisms with playable = false are skipped:
+// prompt is a generation envelope, not a board card.
 getCardTypes() =>
   let out = [];
   try {
-    let types = root.card.types;
+    let organisms = root.card.organisms;
     let catalog = {};
     try {
-      for (let c of root.getCardComponents()) catalog[c.key] = c;
+      for (let m of root.getCardMolecules()) catalog[m.key] = m;
     } catch (e) {}
-    for (let t of root.listChildNames(types)) {
-      let node = types[t];
+    for (let t of root.listChildNames(organisms)) {
+      let node = organisms[t];
       if (!node) continue;
-      // Special handling is intrinsic to the component: anything whose
-      // handling is not a plain field renders in its own editor section.
-      // A per-type extras list, if one is ever written, merges the same way.
-      let extra = {};
       try {
-        for (let k of root.typeSpecKeys(t)) {
-          let h = String((catalog[k] || {}).handling || "field");
-          if (h !== "field") extra[k] = true;
-        }
-        for (let k of root.listChildNames(node.extras)) extra[k] = true;
+        if (String(node.playable) === "false") continue;
       } catch (e) {}
       let fields = [];
       for (let k of root.typeSpecKeys(t)) {
-        if (extra[k]) continue;
-        let c = catalog[k] || {};
+        let m = catalog[k] || {};
         fields.push({
           key: k,
-          label: String(c.label !== undefined && c.label !== null ? c.label : k),
-          placeholder: String(c.placeholder || ""),
-          multiline: !!c.multiline
+          label: String(m.label !== undefined && m.label !== null ? m.label : k),
+          atom: String(m.atom || "textfield"),
+          control: String(m.control || "textarea"),
+          multiline: !!m.multiline,
+          placeholder: String(m.placeholder || ""),
+          help: String(m.help || ""),
+          readonly: !!m.readonly,
+          options: m.options || [],
+          default: String(m.default || "")
         });
       }
       out.push({
@@ -323,18 +315,17 @@ getCardTypes() =>
   } catch (e) {}
   return out;
 
-// Every spec key composed into any type, in catalog order, plus the legacy
-// greeting alias. getStarterCards copies exactly these from specs.
+// Every spec key composed into a playable organism, in registry order.
+// getStarterCards copies exactly these from specs.
 specKeyUnion() =>
   let out = [];
   try {
-    for (let c of root.getCardComponents()) {
-      let k = c.key;
-      if (k === "name" || k === "definition" || k === "image") continue;
-      if (out.indexOf(k) < 0) out.push(k);
+    for (let e of root.getCardTypes()) {
+      for (let f of e.fields) {
+        if (out.indexOf(f.key) < 0) out.push(f.key);
+      }
     }
   } catch (e) {}
-  if (out.indexOf("greeting") < 0) out.push("greeting");
   return out;
 
 // Starter cards as plain JS objects in the public card shape:
@@ -421,7 +412,7 @@ createCardSkeleton(typeName) =>
 
 // Ensure any dirty object (storage, import, share link) has the full card
 // shape. Unknown types fall back to character. Extra specs are kept per
-// the type's components in card.types. Never throws.
+// the organism's parts in card.organisms. Never throws.
 sanitizeCard(dirty) =>
   let d = dirty || {};
   let types = {};
@@ -500,70 +491,7 @@ migrateLegacyCharacter(old) =>
     created_at: String(o.created_at || stamp)
   };
 
-// Bracket state: public_state and private_state are multiline KEY: value
-// text. Parsed into objects so private maps can be withheld from other
-// speakers with a one-line filter. No regex veils, no telepathy.
-parseBracketLines(text) =>
-  let out = {};
-  try {
-    let parts = String(text || "").split("\n");
-    for (let rawLine of parts) {
-      let chunks = String(rawLine || "").split(";");
-      for (let raw of chunks) {
-        let line = String(raw || "").trim();
-        if (!line) continue;
-        let cut = line.indexOf(":");
-        if (cut < 0) cut = line.indexOf("=");
-        if (cut < 0) continue;
-        let k = line.slice(0, cut).trim();
-        let v = line.slice(cut + 1).trim();
-        if (k) out[k] = v;
-      }
-    }
-  } catch (e) {}
-  return out;
-
-// Both brackets of a card as objects, reading flat text fields or a
-// vision-literal nested specs.brackets object, whichever is present.
-getBrackets(card) =>
-  let pub = {};
-  let priv = {};
-  try {
-    let s = (card && card.specs) || {};
-    if (s.brackets && typeof s.brackets === "object") {
-      let b = s.brackets;
-      let grab = function (o) {
-        if (o === undefined || o === null) return {};
-        if (typeof o === "string") return root.parseBracketLines(o);
-        if (typeof o !== "object") return {};
-        let r = {};
-        for (let k of Object.keys(o)) r[String(k)] = String(o[k]);
-        return r;
-      };
-      pub = grab(b.public !== undefined ? b.public : b.PUBLIC);
-      priv = grab(b.private !== undefined ? b.private : b.PRIVATE);
-    } else {
-      pub = root.parseBracketLines(s.public_state || s.public || "");
-      priv = root.parseBracketLines(s.private_state || s.private || "");
-    }
-  } catch (e) {}
-  return { public: pub, private: priv };
-
-// Sorted KEY: value rendering for one bracket map. Empty string if none.
-bracketLine(map) =>
-  let out = "";
-  try {
-    let keys = Object.keys(map || {});
-    keys.sort();
-    let bits = [];
-    for (let k of keys) bits.push(String(k) + ": " + String(map[k]));
-    out = bits.join("; ");
-  } catch (e) {}
-  return out;
-
 // Render one equipped (non-active) card as a stable prompt section.
-// includePrivate true only for the Director prompt and the speaker own
-// card. Everyone else sees public state only.
 cardPromptSection(card, includePrivate) =>
   let c = card || {};
   let type = String(c.type || "character");
@@ -585,13 +513,182 @@ cardPromptSection(card, includePrivate) =>
   if (type === "challenge") return "CHALLENGE " + name + ": " + def;
   if (type === "director") return "DIRECTION " + name + ": " + def;
   if (type === "style") return "PROSE STYLE " + name + ": " + def;
-  if (type === "rule") return "RULE " + name + ": " + def;
+  if (type === "rule") {
+    let enf = "strict";
+    try {
+      enf = String((c.specs || {}).enforcement || "strict");
+    } catch (e) {}
+    let out = "RULE " + name + ": " + def;
+    if (enf === "guideline") out = out + " Treat this as a guideline, not an absolute.";
+    else out = out + " Enforce this strictly.";
+    return out;
+  }
   return String(type).toUpperCase() + " " + name + ": " + def;
 
 equippedSortOrder(typeName) =>
   let order = ["persona", "location", "scenario", "challenge", "director", "style", "rule", "character"];
   let i = order.indexOf(String(typeName));
   return i < 0 ? 99 : i;
+
+// Render one template string against a flat dotted-path scope
+// ({"speaker.name": "Chloe"}). Longest paths first so speaker.output
+// wins over speaker. Never throws.
+renderTemplate(textInput, scopeInput) =>
+  let out = String(textInput || "");
+  let scope = scopeInput || {};
+  let keys = [];
+  try {
+    keys = Object.keys(scope);
+  } catch (e) {}
+  keys.sort(function (a, b) { return b.length - a.length; });
+  for (let k of keys) {
+    if (!k) continue;
+    let v = "";
+    try {
+      v = String(scope[k]);
+      if (v === undefined || v === null) v = "";
+    } catch (e) {}
+    try {
+      out = out.split(k).join(v);
+    } catch (e) {}
+  }
+  return out;
+
+// Scope for one slotted card: slotName.field plus type-name aliases
+// (inside a slot output template, the accepted type name means the
+// slotted card). Specs ride as slotName.specs.key. Never throws.
+slotScope(slotName, cardInput, typeNamesInput) =>
+  let scope = {};
+  try {
+    let c = cardInput || {};
+    let fields = ["name", "definition", "image"];
+    for (let f of fields) {
+      let v = "";
+      try {
+        v = String(c[f] || "");
+      } catch (e) {}
+      scope[slotName + "." + f] = v;
+      try {
+        for (let t of typeNamesInput) scope[t + "." + f] = v;
+      } catch (e) {}
+    }
+    try {
+      let specs = c.specs || {};
+      for (let k of Object.keys(specs)) {
+        try {
+          scope[slotName + ".specs." + k] = String(specs[k]);
+        } catch (e) {}
+      }
+    } catch (e) {}
+  } catch (e) {}
+  return scope;
+
+// Render the prompt organism for slotted cards. slotsInput maps slot
+// name to card object (or null). A slot with no card contributes
+// nothing: its output is "" and references to it dissolve. taskInput
+// appends a TASK block when given; stopsInput appends caller extras
+// after the wired stops from the stopSequences part content.
+// Returns {instruction, startWith, stopSequences}. Never throws.
+assemblePromptCard(slotsInput, taskInput, stopsInput) =>
+  let out = { instruction: "", startWith: "", stopSequences: [] };
+  try {
+    let slots = slotsInput || {};
+    let parts = root.card.organisms.prompt.parts;
+    let scope = {};
+    let slotNames = root.listChildNames(parts);
+    for (let s of slotNames) {
+      let def = null;
+      try {
+        def = parts[s];
+      } catch (e) {}
+      let atom = "";
+      try {
+        atom = String(def.atom || "");
+      } catch (e) {}
+      if (atom !== "cardslot") continue;
+      let card = null;
+      try {
+        card = slots[s] || null;
+      } catch (e) {}
+      if (!card) {
+        scope[s + ".output"] = "";
+        scope[s + ".name"] = "";
+        scope[s + ".definition"] = "";
+        scope[s + ".image"] = "";
+        continue;
+      }
+      let accepts = [];
+      try {
+        accepts = root.listChildNames(def.accepts);
+      } catch (e) {}
+      let sub = root.slotScope(s, card, accepts);
+      let tpl = "";
+      try {
+        tpl = String(def.output || "");
+      } catch (e) {}
+      let rendered = root.renderTemplate(tpl, sub);
+      scope[s + ".output"] = rendered;
+      for (let k of Object.keys(sub)) scope[k] = sub[k];
+    }
+    try {
+      let rawInstruction = root.renderTemplate(String(parts.instruction.content || ""), scope);
+      let paras = [];
+      try {
+        paras = String(rawInstruction || "").split("~~~");
+      } catch (e) {}
+      let cleaned = [];
+      for (let q of paras) {
+        let t = String(q || "").trim();
+        if (t) cleaned.push(t);
+      }
+      out.instruction = cleaned.join("\n\n");
+    } catch (e) {}
+    try {
+      out.startWith = String(root.renderTemplate(String(parts.startWith.content || ""), scope)).trim();
+    } catch (e) {}
+    let task = String(taskInput || "").trim();
+    if (task) out.instruction = out.instruction + "\nTASK: " + task;
+    try {
+      let rawStops = root.renderTemplate(String(parts.stopSequences.content || ""), scope);
+      let wired = [];
+      try {
+        let chunks = String(rawStops || "").split("~~~");
+        for (let c of chunks) {
+          let t = String(c || "").trim();
+          if (!t) continue;
+          if (t.charAt(0) !== "\n") t = "\n" + t;
+          if (wired.indexOf(t) < 0) wired.push(t);
+        }
+      } catch (e) {}
+      try {
+        if (stopsInput && stopsInput.length) {
+          for (let s of stopsInput) {
+            let t = String(s || "").trim();
+            if (!t) continue;
+            if (wired.indexOf(t) < 0 && wired.indexOf("\n" + t) < 0) wired.push(t);
+          }
+        }
+      } catch (e) {}
+      out.stopSequences = wired;
+    } catch (e) {}
+  } catch (e) {}
+  return out;
+
+// Full loop for one prompt card: assemble the envelopes from slotted
+// cards, generate, read the finish. slotsInput maps slot name to card
+// (or null); taskInput appends the TASK block; stopsInput rides along.
+// Returns the readFinish shape: {text, thoughts, stopReason, clean}.
+async runPromptCard(slotsInput, taskInput, stopsInput) =>
+  let stops = [];
+  try {
+    if (stopsInput && stopsInput.length) stops = stopsInput;
+  } catch (e) {}
+  let p = root.assemblePromptCard(slotsInput, taskInput, stops);
+  let launched = root.launchGeneration(
+    { instruction: p.instruction, startWith: p.startWith, stopSequences: p.stopSequences },
+    function (res) { return root.readFinish(res, p.startWith, p.stopSequences); }
+  );
+  return launched.promise;
 
 // Full deck prompt: one active character card plus any equipped cards.
 // characterInput: character card. cardsInput: array of other cards.
@@ -766,13 +863,13 @@ buildTablePrompt(handInput, messagesInput, summaryInput, speakerInput, directorN
   else if (castNames.length) parts.push("No character speaks this turn. Narrate only; do not put words in any character mouth.");
   parts.push("Rules: never break character. Never mention being an AI or a language model. Keep continuity with earlier messages.");
   if (directorNotes) parts.push("Hidden staging from the director. Use it for subtext and physical beats. Never quote it, never mention the director: " + directorNotes);
-  if (directorNotes && speaker) parts.push("Begin with a <think> block of one to three sentences: " + speakerName + " private inner thoughts reacting to the last message in light of the staging. Then the visible reply. Never reveal the staging.");
+  if (directorNotes && speaker) parts.push("Begin with a ### Thoughts section of one to three sentences: " + speakerName + " private inner thoughts reacting to the last message in light of the staging. Then a ### Reply heading with the visible reply. Never reveal the staging.");
   let headText = parts.join("\n\n");
   let summaryBlock = summary ? "Earlier story summary, still true unless contradicted:\n" + summary : "";
   let logText = lines.join("\n\n");
   let instruction = headText + "\n\n" + (summaryBlock ? summaryBlock + "\n\n" : "") + "MESSAGES\n" + logText + "\nEND MESSAGES\nTASK: " + task;
   let startWith = speakerName + ":";
-  if (directorNotes && speaker) startWith = startWith + " <think>";
+  if (directorNotes && speaker) startWith = startWith + "\n### Thoughts\n";
   let stops = ["\n" + userName + ":", "\nUser:", "\nSystem note:", "\nNarration:"];
   if (userName !== "You") stops.push("\nYou:");
   try {
@@ -818,9 +915,10 @@ buildDirectorPrompt(handInput, messagesInput, summaryInput, nextSpeakerNameInput
   return { instruction: instruction, startWith: "Staging:", stopSequences: [] };
 
 // Token estimate for a table prompt. Synchronous.
+// Counts instruction + startWith: both ride the wire, so both cost context.
 estimateTableTokens(handInput, messagesInput, summaryInput, speakerInput) =>
   let p = root.buildTablePrompt(handInput, messagesInput, summaryInput, speakerInput, "", "Write the next response.");
-  return root.countTokens(p.instruction);
+  return root.countTokens(String(p.instruction || "") + String(p.startWith || ""));
 
 // One-shot table turn for importers, with the full 2-shot when a
 // director is on the table. Returns speaker, text, thoughts, staging.
@@ -913,17 +1011,35 @@ readFinish(data, prefixInput, stopsInput) =>
   let clean = text !== "" && reason !== "user" && reason !== "error" && reason !== "interrupted";
   return { text: text, stopReason: reason, clean: clean };
 
-// readFinish plus <think> splitting for staged speaker turns.
+// readFinish plus Thoughts/Reply splitting for staged speaker turns.
+// Staged replies open with a ### Thoughts section and put the spoken
+// reply under ### Reply. Legacy <think> replies still split, so old
+// threads keep their thoughts.
 readTableFinish(data, speakerNameInput, stopsInput) =>
   let f = root.readFinish(data, String(speakerNameInput || "") + ":", stopsInput);
   let text = f.text;
-  if (text.indexOf("<think>") === 0) text = text.slice(7).trim();
   let thoughts = "";
-  let closeThink = text.indexOf("</think>");
-  if (closeThink >= 0) {
-    thoughts = text.slice(0, closeThink).trim();
-    text = text.slice(closeThink + 8).trim();
-  }
+  try {
+    let t = String(text || "").trim();
+    let replyTag = "### Reply";
+    let ri = t.indexOf(replyTag);
+    if (ri >= 0) {
+      let head = t.slice(0, ri).trim();
+      let thoughtsTag = "### Thoughts";
+      if (head.indexOf(thoughtsTag) === 0) head = head.slice(thoughtsTag.length).trim();
+      thoughts = head;
+      text = t.slice(ri + replyTag.length).trim();
+    } else if (t.indexOf("<think>") === 0) {
+      let body = t.slice(7).trim();
+      let closeThink = body.indexOf("</think>");
+      if (closeThink >= 0) {
+        thoughts = body.slice(0, closeThink).trim();
+        text = body.slice(closeThink + 8).trim();
+      } else {
+        text = body;
+      }
+    }
+  } catch (e) {}
   return { text: text, thoughts: thoughts, stopReason: f.stopReason, clean: f.clean && text !== "" };
 
 // Token counter, centralized: if the plugin changes its counter, only
@@ -1167,31 +1283,49 @@ buildChatPrompt(characterInput, messagesInput, summaryInput, taskInput) =>
 // Fast approximate token count for the current prompt. Synchronous.
 estimateChatTokens(characterInput, messagesInput, summaryInput) =>
   let p = root.buildChatPrompt(characterInput, messagesInput, summaryInput, "Write the next response.");
-  return root.countTokens(p.instruction);
+  return root.countTokens(String(p.instruction || "") + String(p.startWith || ""));
 
 // Token estimate for a full deck prompt. Synchronous.
 estimateDeckTokens(characterInput, cardsInput, messagesInput, summaryInput) =>
   let p = root.buildDeckPrompt(characterInput, cardsInput, messagesInput, summaryInput, "Write the next response.");
-  return root.countTokens(p.instruction);
+  return root.countTokens(String(p.instruction || "") + String(p.startWith || ""));
 
 // Ideal max context tokens recommended by the backend. Synchronous.
+// Live value from getMetaObject; settings.tokens.fallbackMax only if that
+// call fails or returns junk (6000 literal is the last resort).
 getIdealMaxTokens() =>
+  let fb = 6000;
   try {
-    return root.generateText({ getMetaObject: true }).idealMaxContextTokens;
+    let f = Number(root.settings.tokens.fallbackMax);
+    if (f > 0 && isFinite(f)) fb = Math.floor(f);
+  } catch (e) {}
+  try {
+    let v = Number(root.generateText({ getMetaObject: true }).idealMaxContextTokens);
+    if (v > 0 && isFinite(v)) return Math.floor(v);
+    return fb;
   } catch (e) {
-    return 6000;
+    return fb;
   }
 
-// Usable payload ceiling: the advisory window minus headroom for the
-// reply, using chatDefaults summaryTriggerRatio as the fill ratio.
+// Usable payload ceiling: the advisory window minus headroom for the reply.
+// Fill ratio is settings.tokens.budgetRatio, falling back to the legacy
+// chatDefaults.summaryTriggerRatio, then 0.9.
 budgetTokens() =>
   let ratio = 0.9;
   try {
-    let r = Number(root.chatDefaults.summaryTriggerRatio);
-    if (r > 0 && r < 1) ratio = r;
+    let s = Number(root.settings.tokens.budgetRatio);
+    if (s > 0 && s < 1) ratio = s;
+    else {
+      let l = Number(root.chatDefaults.summaryTriggerRatio);
+      if (l > 0 && l < 1) ratio = l;
+    }
   } catch (e) {}
   try {
-    return Math.floor(root.getIdealMaxTokens() * ratio);
+    let w = Number(root.getIdealMaxTokens());
+    if (w > 0 && isFinite(w)) return Math.floor(w * ratio);
+    let f = Number(root.settings.tokens.fallbackMax);
+    if (f > 0 && isFinite(f)) return Math.floor(f * ratio);
+    return 5400;
   } catch (e) {
     return 5400;
   }

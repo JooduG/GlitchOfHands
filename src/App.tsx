@@ -4,7 +4,7 @@
  *
  * Full working chat app: binder (search + All + 8 type pills), 6-slot
  * board with speaker rotation, streaming AI turns (1-shot / director
- * 2-shot with <think> staging), card editor with bracket fields, read-only
+ * 2-shot with ### Thoughts / ### Reply staging), card editor with registry fields, read-only
  * inspector, toasts, export/import/share, kv persistence.
  *
  * In Perchance (pasted dist build) every AI/storage call goes through
@@ -480,7 +480,7 @@ export function App() {
           ? {
               role: "char",
               content: parts.thoughts
-                ? `<think>${parts.thoughts}</think>\n${parts.visible}`
+                ? `### Thoughts\n${parts.thoughts}\n### Reply\n${parts.visible}`
                 : parts.visible,
               authorId: speaker.id,
               authorName: speakerName,
@@ -596,13 +596,19 @@ export function App() {
       }
     }
     const c = labSpeaker();
-    const identity = c ? `<YOUR_IDENTITY name="${c.name}">${c.definition}</YOUR_IDENTITY>` : "";
+    // Demo fallback mirrors the main.pjs prompt organism in markdown:
+    // identity heading, roleplay rule, wired trio stops + caller extras.
+    const identity = c ? `**${c.name}** — ${c.definition}` : "";
+    const wired = ["\nYou:", "\nUser:", "\nSystem note:"];
+    for (const s of stops) {
+      if (wired.indexOf(s) < 0 && wired.indexOf("\n" + s) < 0) wired.push(s);
+    }
     return {
       instruction:
-        `<SYSTEM>${identity}<AFFIRMATIVE_WORDING>Use exclusively affirmative language</AFFIRMATIVE_WORDING></SYSTEM>` +
+        `# Roleplay${identity ? `\n\n${identity}` : ""}\n\n**Rule:** Use exclusively affirmative language.` +
         (task ? `\nTASK: ${task}` : ""),
       startWith: c ? `${c.name}:` : "",
-      stopSequences: stops,
+      stopSequences: wired,
     };
   }
   function openLab() {

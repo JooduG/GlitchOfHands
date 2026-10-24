@@ -224,7 +224,7 @@ export function buildTablePrompt(
     );
   if (directorNotes && speaker)
     parts.push(
-      `Begin with a <think> block of one to three sentences: ${speakerName} private inner thoughts reacting to the last message in light of the staging. Then the visible reply. Never reveal the staging.`,
+      `Begin with a ### Thoughts section of one to three sentences: ${speakerName} private inner thoughts reacting to the last message in light of the staging. Then a ### Reply heading with the visible reply. Never reveal the staging.`,
     );
   const headText = parts.join("\n\n");
   const summaryBlock = summary
@@ -240,7 +240,7 @@ export function buildTablePrompt(
     "\nEND MESSAGES\nTASK: " +
     task;
   let startWith = `${speakerName}:`;
-  if (directorNotes && speaker) startWith = startWith + " <think>";
+  if (directorNotes && speaker) startWith = startWith + "\n### Thoughts\n";
   const stops = [`\n${userName}:`, "\nUser:", "\nSystem note:", "\nNarration:"];
   if (userName !== "You") stops.push("\nYou:");
   try {
@@ -322,12 +322,27 @@ export function stripReply(text: string, charName: string, stops: string[]): str
   return t.trim();
 }
 
-/** Split a leading `<think>…</think>` block from the visible reply. */
+/**
+ * Split a staged reply into thoughts + visible. New replies open with a
+ * `### Thoughts` section and put the spoken reply under `### Reply`.
+ * Legacy `<think>…</think>` replies still split, so old threads keep
+ * their thoughts.
+ */
 export function splitThink(text: string): { thoughts: string; visible: string } {
-  let t = String(text || "").trim();
-  if (t.indexOf("<think>") === 0) t = t.slice(7).trim();
-  const j = t.indexOf("</think>");
-  if (j >= 0) return { thoughts: t.slice(0, j).trim(), visible: t.slice(j + 8).trim() };
+  const t = String(text || "").trim();
+  const replyTag = "### Reply";
+  const ri = t.indexOf(replyTag);
+  if (ri >= 0) {
+    let head = t.slice(0, ri).trim();
+    const thoughtsTag = "### Thoughts";
+    if (head.indexOf(thoughtsTag) === 0) head = head.slice(thoughtsTag.length).trim();
+    return { thoughts: head, visible: t.slice(ri + replyTag.length).trim() };
+  }
+  let body = t;
+  if (body.indexOf("<think>") === 0) body = body.slice(7).trim();
+  const j = body.indexOf("</think>");
+  if (j >= 0) return { thoughts: body.slice(0, j).trim(), visible: body.slice(j + 8).trim() };
+  if (body !== t) return { thoughts: "", visible: body };
   return { thoughts: "", visible: t };
 }
 
@@ -338,5 +353,6 @@ export function estimateTokens(text: string): number {
 
 /**
  * CHANGELOG:
+ * - 2026-10-23: Markdown staging (`### Thoughts` / `### Reply`, legacy `<think>` fallback).
  * - 2026-10-21: Created — port of main.pjs prompt builders + bracket rendering (public always, private on self/director).
  */
